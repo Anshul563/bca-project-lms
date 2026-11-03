@@ -1,0 +1,4 @@
+{
+  "extends": "@lms/tsconfig/api.json",
+  "include": ["src", "vitest.config.ts"]
+}

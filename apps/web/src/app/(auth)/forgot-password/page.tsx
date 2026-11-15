@@ -1,0 +1,16 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+
+import { ForgotPasswordForm } from "@/features/auth/forgot-password-form";
+
+export const metadata: Metadata = {
+  title: "Forgot password",
+};
+
+export default function ForgotPasswordPage() {
+  return (
+    <main aria-label="Forgot password">
+      <ForgotPasswordForm />
+    </main>
+  );
+}

@@ -180,6 +180,29 @@ export async function refreshSession(refreshToken: string, meta: ClientMeta): Pr
   return { user: toPublicUser(user), tokens };
 }
 
+export async function getSessionInfo(refreshToken: string | null): Promise<{ authenticated: boolean; role?: string }> {
+  if (!refreshToken) {
+    return { authenticated: false };
+  }
+  try {
+    const payload = verifyRefreshToken(refreshToken);
+    const account = await UserModel.exists({
+      _id: payload.sub,
+      status: "active",
+      refreshSessions: {
+        $elemMatch: { tokenHash: hashOpaqueToken(refreshToken), expiresAt: { $gt: new Date() } },
+      },
+    });
+    if (!account) {
+      return { authenticated: false };
+    }
+    const user = await UserModel.findById(payload.sub).select("role");
+    return { authenticated: true, role: user?.role };
+  } catch {
+    return { authenticated: false };
+  }
+}
+
 export async function logout(refreshToken: string | null): Promise<void> {
   if (!refreshToken) {
     return;

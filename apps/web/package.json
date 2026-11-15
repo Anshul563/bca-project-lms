@@ -39,6 +39,8 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@lms/eslint-config": "workspace:*",
+    "@lms/tsconfig": "workspace:*",
     "@tailwindcss/turbopack": "^4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.0",

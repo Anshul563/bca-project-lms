@@ -67,6 +67,13 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   sendSuccess(res, null, { message: "Signed out" });
 });
 
+/** Read-only session validation for server-side Next.js rendering. */
+export const sessionInfo = asyncHandler(async (req: Request, res: Response) => {
+  const token = readRefreshCookie(req.cookies?.[REFRESH_TOKEN_COOKIE]);
+  const info = await authService.getSessionInfo(token);
+  sendSuccess(res, info);
+});
+
 export const me = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) {
     throw ApiError.unauthorized();

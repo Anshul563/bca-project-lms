@@ -354,6 +354,12 @@ importers:
         specifier: ^4.1.12
         version: 4.6.7
     devDependencies:
+      '@lms/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@lms/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
       '@tailwindcss/turbopack':
         specifier: ^4
         version: 4.3.3

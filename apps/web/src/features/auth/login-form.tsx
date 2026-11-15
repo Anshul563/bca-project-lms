@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { setAccessToken, tryApi } from "@/lib/api-client";
+import type { Route } from "next";
 
 type LoginValues = z.infer<typeof loginBodySchema>;
 
@@ -55,8 +56,13 @@ export function LoginForm() {
     setAccessToken(result.data.accessToken);
     void queryClient.invalidateQueries({ queryKey: ["me"] });
     toast.success(SUCCESS_MESSAGE);
+    // `next` is validated to be a local path (starts with "/") before use.
     const next = searchParams.get("next");
-    router.replace(next && next.startsWith("/") ? next : "/courses");
+    if (next && next.startsWith("/")) {
+      router.replace(next as Route);
+    } else {
+      router.replace("/courses");
+    }
     router.refresh();
   }
 

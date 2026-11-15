@@ -35,9 +35,17 @@ decision changes.
   tsx, Vitest, and Next.js all support it; future-proofs the API layer.
 - **Express 5** — current stable major; native async error forwarding;
   `req.query` is a read-only getter, which is why **`express-mongo-sanitize`
-  is replaced by a small in-house body sanitizer** plus
-  `mongoose.set("sanitizeFilter", true)` (cover both body and query paths).
-  Route params are whitelisted schemas, never merged with user operators.
+  is replaced by a small in-house body sanitizer** plus careful query
+  construction. Route params are whitelisted schemas, never merged with user
+  operators.
+- **NoSQL injection strategy** — Mongoose's global `sanitizeFilter` is
+  deliberately OFF: it wraps *every* operator value (`$gt`, `$elemMatch`,
+  `$in`…) in `$eq`, breaking normal operator queries. Instead: (1) request
+  bodies are sanitized by an in-house middleware that strips `$`-keys and
+  dotted paths, (2) every endpoint validates inputs with Zod and builds query
+  filters from individual validated scalars — raw user objects never flow
+  into filters, (3) session-token lookups use dotted paths on unguessable
+  random hashes.
 - **bcryptjs instead of argon2** — pure-JS implementation avoids native build
   fragility across machines; argon2 can be swapped behind the same service
   boundary later without API changes.

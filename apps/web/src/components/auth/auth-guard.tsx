@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import type { UserRole } from "@lms/shared";
+import type { Route } from "next";
 
 import { useSession } from "@/lib/auth";
 
@@ -12,7 +13,7 @@ interface AuthGuardProps {
   allow?: readonly UserRole[];
 }
 
-const DASHBOARD_BY_ROLE: Record<UserRole, string> = {
+const DASHBOARD_BY_ROLE: Record<UserRole, Route> = {
   student: "/student",
   instructor: "/instructor",
   admin: "/admin",

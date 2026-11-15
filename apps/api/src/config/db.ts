@@ -3,9 +3,12 @@ import mongoose from "mongoose";
 import { env } from "./env.js";
 import { logger } from "../utils/logger.js";
 
-// Enable server-side filter sanitization so injected query operators
-// (e.g. `$ne`, `$regex`) can never reach the database.
-mongoose.set("sanitizeFilter", true);
+// NOTE: `sanitizeFilter` is intentionally NOT enabled. It wraps every value
+// containing `$`-operators in `$eq`, which breaks all standard operator
+// queries ($gt, $elemMatch, $in...). It is only needed when raw user objects
+// flow into filters; here every filter is built server-side from Zod-validated
+// scalars, and request bodies pass through the in-house sanitizer first.
+// See docs/DECISIONS.md ("NoSQL injection strategy").
 
 if (env.NODE_ENV === "development") {
   mongoose.set("debug", (collection, method, arg1, arg2) => {

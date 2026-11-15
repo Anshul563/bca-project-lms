@@ -87,7 +87,7 @@ export default function HomePage() {
                 <Link href="/courses">Explore catalog</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link href="/become-instructor">Become an instructor</Link>
+                <Link href="/register">Become an instructor</Link>
               </Button>
             </div>
           </div>

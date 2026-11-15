@@ -18,8 +18,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLogout, useSession } from "@/lib/auth";
+import type { Route } from "next";
 
-const DASHBOARD_BY_ROLE: Record<UserRole, string> = {
+const DASHBOARD_BY_ROLE: Record<UserRole, Route> = {
   student: "/student",
   instructor: "/instructor",
   admin: "/admin",
@@ -96,7 +97,7 @@ export function SiteHeader() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" onSelect={() => void onLogout()}>
+                <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => void onLogout()}>
                   <LogOut aria-hidden />
                   Sign out
                 </DropdownMenuItem>

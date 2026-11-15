@@ -1,6 +1,5 @@
 import type { CourseLevel, CourseStatus, LessonType } from "../enums.js";
 import type { PaginationMeta } from "./http.js";
-
 export interface PublicCategory {
   id: string;
   name: string;
@@ -65,4 +64,20 @@ export interface LessonDetail extends PublicLesson {
   fileUrl?: string;
   externalUrl?: string;
   attachments: { name: string; url: string }[];
+}
+
+export interface PublicEnrollment {
+  id: string;
+  status: "active" | "completed" | "cancelled";
+  progressPercent: number;
+  enrolledAt: string;
+  completedAt?: string;
+  course: {
+    id: string;
+    slug: string;
+    title: string;
+    thumbnail?: string;
+    level: CourseLevel;
+    totalDurationMinutes: number;
+  } | null;
 }

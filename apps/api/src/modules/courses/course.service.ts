@@ -1,12 +1,12 @@
 import {
   type CourseListQuery,
   type CourseList,
+  type PublicCategory,
   type PublicCourseDetail,
-  type PublicCourseSummary,
   type PublicLesson,
   type PublicSection,
 } from "@lms/shared";
-import type { Types } from "mongoose";
+import mongoose, { type Types } from "mongoose";
 
 import { ApiError } from "../../utils/ApiError.js";
 import { CategoryModel } from "../categories/category.model.js";
@@ -56,7 +56,7 @@ export async function createCategory(input: {
   return CategoryModel.create({ ...input, slug });
 }
 
-export async function listCategories(): Promise<{ items: PublicCourseSummary[]; count: number }> {
+export async function listCategories(): Promise<{ items: PublicCategory[]; count: number }> {
   const categories = await CategoryModel.find({ deletedAt: null }).sort({ name: 1 }).lean();
   const counts = await CourseModel.aggregate<{ _id: Types.ObjectId; count: number }>([
     { $match: { ...PUBLISHED_FILTER, categoryId: { $ne: null } } },
@@ -65,8 +65,10 @@ export async function listCategories(): Promise<{ items: PublicCourseSummary[]; 
   const countByCategory = new Map(counts.map((entry) => [String(entry._id), entry.count]));
   return {
     items: categories.map((category) => ({
-      ...category,
       id: String(category._id),
+      name: category.name,
+      slug: category.slug,
+      ...(category.description ? { description: category.description } : {}),
       ...(countByCategory.get(String(category._id)) !== undefined
         ? { courseCount: countByCategory.get(String(category._id)) }
         : {}),
@@ -76,36 +78,6 @@ export async function listCategories(): Promise<{ items: PublicCourseSummary[]; 
 }
 
 /* -------------------------------- courses -------------------------------- */
-
-function toCourseSummary(course: CourseDoc, category?: { id: string; name: string; slug: string } | null): PublicCourseSummary {
-  return {
-    id: String(course._id),
-    slug: course.slug,
-    title: course.title,
-    ...(course.subtitle ? { subtitle: course.subtitle } : {}),
-    ...(course.thumbnail ? { thumbnail: course.thumbnail } : {}),
-    level: course.level,
-    language: course.language,
-    price: course.price,
-    ratingAverage: course.ratingAverage,
-    ratingCount: course.ratingCount,
-    enrollmentCount: course.enrollmentCount,
-    totalDurationMinutes: course.totalDurationMinutes,
-    ...(category ? { category } : {}),
-    instructor: {
-      id: "",
-      name: "",
-      ...(course.instructor instanceof Object &&
-      "name" in (course.instructor as unknown as Record<string, unknown>)
-        ? {
-            id: String((course.instructor as unknown as { _id: Types.ObjectId })._id ?? ""),
-            name: (course.instructor as unknown as { name: string }).name,
-          }
-        : {}),
-    },
-    ...(course.publishedAt ? { publishedAt: course.publishedAt.toISOString() } : {}),
-  };
-}
 
 interface ListOptions {
   includeUnpublishedFor?: Types.ObjectId;
@@ -232,7 +204,7 @@ export async function getCourseBySlug(
   const sections = await SectionModel.find({ course: course._id }).sort({ order: 1 }).lean();
   const lessons = await LessonModel.find({ course: course._id }).sort({ order: 1 }).lean();
 
-  const lessonsBySection = new Map<string, ILesson[]>();
+  const lessonsBySection = new Map<string, (ILesson & { _id: Types.ObjectId })[]>();
   for (const lesson of lessons) {
     const key = String(lesson.section);
     const bucket = lessonsBySection.get(key) ?? [];
@@ -373,8 +345,13 @@ export async function softDeleteCourse(courseId: string): Promise<void> {
 
 /* ---------------------------- sections / lessons ---------------------------- */
 
-async function nextOrder(model: typeof SectionModel | typeof LessonModel, filter: Record<string, unknown>): Promise<number> {
-  const last = await model.findOne(filter).sort({ order: -1 }).select("order").lean();
+async function nextSectionOrder(courseId: Types.ObjectId): Promise<number> {
+  const last = await SectionModel.findOne({ course: courseId }).sort({ order: -1 }).select("order").lean();
+  return (last?.order ?? -1) + 1;
+}
+
+async function nextLessonOrder(sectionId: Types.ObjectId): Promise<number> {
+  const last = await LessonModel.findOne({ section: sectionId }).sort({ order: -1 }).select("order").lean();
   return (last?.order ?? -1) + 1;
 }
 
@@ -383,7 +360,7 @@ export async function createSection(courseId: string, title: string) {
   if (!course) {
     throw ApiError.notFound("Course not found");
   }
-  return SectionModel.create({ course: course._id, title, order: await nextOrder(SectionModel, { course: course._id }) });
+  return SectionModel.create({ course: course._id, title, order: await nextSectionOrder(course._id) });
 }
 
 export async function updateSection(sectionId: string, title: string) {
@@ -424,7 +401,7 @@ export async function createLesson(courseId: string, sectionId: string, input: R
     ...input,
     course: courseId,
     section: sectionId,
-    order: await nextOrder(LessonModel, { section: section._id }),
+    order: await nextLessonOrder(section._id),
   });
   await recalculateCourseDuration(courseId);
   return lesson;
@@ -468,5 +445,3 @@ export async function recalculateCourseDuration(courseId: string): Promise<void>
   const total = result[0]?.total ?? 0;
   await CourseModel.updateOne({ _id: courseId }, { $set: { totalDurationMinutes: total } });
 }
-
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- mongoose aggregate result typing */

@@ -73,6 +73,18 @@ export const reorderSchema = z.object({
 
 export type ReorderInput = z.infer<typeof reorderSchema>;
 
+export const enrollBodySchema = z.object({
+  courseId: objectIdSchema,
+});
+
+export type EnrollInput = z.infer<typeof enrollBodySchema>;
+
+export const listEnrollmentsQuerySchema = z.object({
+  status: z.enum(["active", "completed", "cancelled"]).optional(),
+});
+
+export type ListEnrollmentsQuery = z.infer<typeof listEnrollmentsQuerySchema>;
+
 /** Public catalog filters (all optional). */
 export const courseListQuerySchema = listQuerySchema.extend({
   category: slugSchema.optional(),

@@ -158,10 +158,13 @@ export async function refreshSession(refreshToken: string, meta: ClientMeta): Pr
   const now = new Date();
 
   // The presented session must exist, unexpired, on a live active account.
+  // Dotted paths (not $elemMatch) because `sanitizeFilter` rewrites nested
+  // operators; the random tokenHash makes cross-element matches impossible.
   const account = await UserModel.exists({
     _id: payload.sub,
     status: "active",
-    refreshSessions: { $elemMatch: { tokenHash, expiresAt: { $gt: now } } },
+    "refreshSessions.tokenHash": tokenHash,
+    "refreshSessions.expiresAt": { $gt: now },
   });
   if (!account) {
     throw ApiError.unauthorized("Session is no longer valid", "SESSION_INVALID");
@@ -189,9 +192,8 @@ export async function getSessionInfo(refreshToken: string | null): Promise<{ aut
     const account = await UserModel.exists({
       _id: payload.sub,
       status: "active",
-      refreshSessions: {
-        $elemMatch: { tokenHash: hashOpaqueToken(refreshToken), expiresAt: { $gt: new Date() } },
-      },
+      "refreshSessions.tokenHash": hashOpaqueToken(refreshToken),
+      "refreshSessions.expiresAt": { $gt: new Date() },
     });
     if (!account) {
       return { authenticated: false };

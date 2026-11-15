@@ -99,7 +99,6 @@ export async function registerStudent(body: RegisterBody, meta: ClientMeta): Pro
     emailVerificationExpiresAt: new Date(Date.now() + EMAIL_VERIFICATION_TTL_MS),
   });
 
-  const currentUserId = String(user._id);
   const emailPayload: OutgoingEmail = {
     ...buildVerificationEmail(user.name, verificationToken),
     to: user.email,

@@ -1,4 +1,4 @@
-import type { ApiErrorDetail } from "@lms/shared";
+import type { ApiErrorDetail, PaginationMeta } from "@lms/shared";
 
 /**
  * Typed fetch wrapper for the LMS API.
@@ -40,6 +40,7 @@ interface EnvelopeOk<T> {
   success: true;
   data: T;
   message?: string;
+  meta?: PaginationMeta;
 }
 
 interface EnvelopeFail {
@@ -141,6 +142,43 @@ export async function apiFetch<TData>(path: string, options: ApiRequestOptions =
   }
 
   return parseEnvelope<TData>(response);
+}
+
+/** Like `apiFetch`, but also surfaces the envelope's pagination `meta`. */
+export async function apiFetchWithMeta<TData>(
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<{ data: TData; meta?: PaginationMeta }> {
+  const response = await rawFetch(path, options);
+
+  if (response.status === 401 && !options.skipAuthRetry) {
+    const refreshed = await refreshSessionOnce();
+    if (refreshed) {
+      const retry = await rawFetch(path, { ...options, skipAuthRetry: true });
+      return parseEnvelopeWithMeta<TData>(retry);
+    }
+  }
+
+  return parseEnvelopeWithMeta<TData>(response);
+}
+
+async function parseEnvelopeWithMeta<T>(response: Response): Promise<{ data: T; meta?: PaginationMeta }> {
+  let payload: unknown = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  const envelope = payload as EnvelopeOk<T> | EnvelopeFail | null;
+  if (response.ok && envelope?.success === true) {
+    return { data: envelope.data, ...(envelope.meta ? { meta: envelope.meta } : {}) };
+  }
+
+  if (envelope && envelope.success === false) {
+    throw new ApiError(response.status, envelope.message, codeFromErrors(envelope.errors), envelope.errors ?? []);
+  }
+  throw new ApiError(response.status, response.statusText || "Request failed");
 }
 
 /** Mutations used by forms; returns `{ data }` or a serializable failure. */

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 
 import { ForgotPasswordForm } from "@/features/auth/forgot-password-form";
 

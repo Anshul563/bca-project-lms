@@ -20,13 +20,13 @@ machine-readable OpenAPI will be published at `/api/v1/docs`.
 
 | Group | Routes | Phase |
 |---|---|---|
-| Health | `GET /health` | 1 |
-| Auth | `/auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/me`, `/auth/verify-email`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/change-password`, `/auth/apply-instructor` | 2 |
-| Users (admin/self) | `/users`, `/users/:id`, `/users/:id/role`, `/users/me/profile` | 2 |
-| Categories | `/categories` CRUD | 3 |
-| Courses | `/courses` (public list/detail), instructor CRUD, sections/lessons, publish flow | 3 |
-| Enrollment | `/enrollments` | 4 |
-| Progress | `/progress/:courseId/lessons/:lessonId/complete` etc. | 4 |
+| Health | `GET /health` | 1 ✅ |
+| Auth | `/auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/session`, `/auth/me`, `/auth/verify-email`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/change-password`, `/auth/apply-instructor` | 2 ✅ |
+| Users (self) | `GET/PATCH /users/me` | 2 ✅ |
+| Categories | `GET /categories`, `GET /categories/:id` (public); create/update/delete (admin) | 3 ✅ |
+| Courses | `GET /courses`, `GET /courses/:slug` (public); instructor CRUD, sections/lessons, reorder, publish flow | 3 ✅ |
+| Enrollment | `POST /enrollments`, `GET /enrollments/my`, `DELETE /enrollments/:id` | 4 ✅ |
+| Progress | `/progress/:courseId/lessons/:lessonId/complete` etc. | 4 (next) |
 | Quizzes | `/courses/:id/quizzes`, attempts/grading | 5 |
 | Reviews | `/courses/:id/reviews` | 6 |
 | Certificates | `/certificates`, verify | 6 |

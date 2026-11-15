@@ -199,7 +199,6 @@ export async function getCourseBySlug(
   }
 
   const isOwner = options.forOwnerOrAdminId !== undefined && String(course.instructor?._id ?? "") === options.forOwnerOrAdminId;
-  const canSeeUnpublished = isOwner || course.status === "published";
 
   const sections = await SectionModel.find({ course: course._id }).sort({ order: 1 }).lean();
   const lessons = await LessonModel.find({ course: course._id }).sort({ order: 1 }).lean();

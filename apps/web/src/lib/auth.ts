@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PublicUser } from "@lms/shared";
 
-import { apiFetch, refreshSessionOnce, setAccessToken, tryApi } from "./api-client";
+import { apiFetch, refreshSessionOnce, setAccessToken } from "./api-client";
 
 export type SessionStatus = "loading" | "authenticated" | "unauthenticated";
 

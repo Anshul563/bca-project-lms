@@ -2,6 +2,7 @@ import { ArrowRight, BadgeCheck, BookOpen, ShieldCheck, Users } from "lucide-rea
 import Link from "next/link";
 
 import { SiteHeader } from "@/components/layout/site-header";
+import { FooterYear } from "@/components/layout/footer-year";
 import { Button } from "@/components/ui/button";
 
 const FEATURES = [
@@ -95,7 +96,7 @@ export default function HomePage() {
       </main>
       <footer className="border-t py-8">
         <div className="mx-auto w-full max-w-7xl px-4 text-sm text-muted-foreground">
-          © {new Date().getFullYear()} LMS. Built as a full-stack learning platform.
+          © <FooterYear /> LMS. Built as a full-stack learning platform.
         </div>
       </footer>
     </div>

@@ -58,6 +58,20 @@ decision changes.
 - **Rate limiter** — `express-rate-limit` in-memory by default. Redis-backed
   stores are an optional documented add-on for multi-instance deployments;
   not a hard dependency in MVP.
+- **Next.js 16 `cacheComponents` (PPR)** — pages are prerenderable by default
+  and dynamic access must stream inside `<Suspense>` or opt out per segment
+  with `export const instant = false`. The course detail page opts out
+  because `generateMetadata` + draft preview read the request's cookies; its
+  body still streams via an inner Suspense boundary (partial prerender).
+  Current time (copyright year) is read client-side via `useSyncExternalStore`
+  — sync IO like `new Date()` can never be deferred and fails the build.
+- **MongoDB pinned to `mongo:8.3.17`** — mongo:8 hard-fails on Linux kernels
+  ≥ 6.19 (SERVER-121912 rseq/TCMalloc incompatibility); 8.3.17 contains the
+  fixed build and boots on kernel 7.x.
+- **Session lookups use dotted paths** (`refreshSessions.tokenHash` +
+  `refreshSessions.expiresAt`) instead of `$elemMatch` — they are equivalent
+  here because the token hash is an unguessable random key, and dotted paths
+  survive any future filter-sanitization changes.
 
 ## Things deliberately NOT done (yet)
 

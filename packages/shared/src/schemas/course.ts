@@ -85,6 +85,15 @@ export const listEnrollmentsQuerySchema = z.object({
 
 export type ListEnrollmentsQuery = z.infer<typeof listEnrollmentsQuerySchema>;
 
+export const courseIdParamsSchema = z.object({
+  courseId: objectIdSchema,
+});
+
+export const lessonParamsSchema = z.object({
+  courseId: objectIdSchema,
+  lessonId: objectIdSchema,
+});
+
 /** Public catalog filters (all optional). */
 export const courseListQuerySchema = listQuerySchema.extend({
   category: slugSchema.optional(),

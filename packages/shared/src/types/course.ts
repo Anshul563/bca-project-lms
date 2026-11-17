@@ -81,3 +81,15 @@ export interface PublicEnrollment {
     totalDurationMinutes: number;
   } | null;
 }
+
+/** Aggregated lesson completion state for one user + course. */
+export interface CourseProgress {
+  courseId: string;
+  status: "active" | "completed" | "cancelled";
+  totalLessons: number;
+  completedLessons: number;
+  progressPercent: number;
+  completedLessonIds: string[];
+  lastLessonId?: string;
+  completedAt?: string;
+}

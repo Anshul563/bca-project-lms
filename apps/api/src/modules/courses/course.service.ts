@@ -1,6 +1,7 @@
 import {
   type CourseListQuery,
   type CourseList,
+  type LessonDetail,
   type PublicCategory,
   type PublicCourseDetail,
   type PublicLesson,
@@ -10,6 +11,7 @@ import mongoose, { type Types } from "mongoose";
 
 import { ApiError } from "../../utils/ApiError.js";
 import { CategoryModel } from "../categories/category.model.js";
+import { EnrollmentModel } from "../enrollments/enrollment.model.js";
 import { LessonModel, type ILesson } from "./lesson.model.js";
 import { CourseModel, type CourseDoc } from "./course.model.js";
 import { SectionModel } from "./section.model.js";
@@ -188,7 +190,7 @@ export async function listCourses(
 
 export async function getCourseBySlug(
   slug: string,
-  options: { forOwnerOrAdminId?: string; includeUnpublishedLessonsForInstructor?: boolean } = {},
+  options: { forOwnerOrAdminId?: string } = {},
 ): Promise<{ course: PublicCourseDetail; isOwner: boolean } | null> {
   const course = await CourseModel.findOne({ slug, deletedAt: null }).populate<{
     instructor: { _id: Types.ObjectId; name: string; avatar?: string; bio?: string } | null;
@@ -204,13 +206,14 @@ export async function getCourseBySlug(
   const lessons = await LessonModel.find({ course: course._id }).sort({ order: 1 }).lean();
 
   const lessonsBySection = new Map<string, (ILesson & { _id: Types.ObjectId })[]>();
+  // Curriculum outline is public for published courses (standard practice —
+  // learners browse titles/durations); lesson *content* stays gated via
+  // getLessonContent. Drafts show everything to their owner only.
+  const canSeeFullOutline = course.status === "published" || isOwner;
   for (const lesson of lessons) {
     const key = String(lesson.section);
     const bucket = lessonsBySection.get(key) ?? [];
-    const visible =
-      course.status === "published" && !isOwner
-        ? lesson.isFreePreview || options.includeUnpublishedLessonsForInstructor === true
-        : true;
+    const visible = canSeeFullOutline || lesson.isFreePreview;
     if (visible) {
       bucket.push(lesson);
     }
@@ -443,4 +446,65 @@ export async function recalculateCourseDuration(courseId: string): Promise<void>
   ]);
   const total = result[0]?.total ?? 0;
   await CourseModel.updateOne({ _id: courseId }, { $set: { totalDurationMinutes: total } });
+}
+
+/* ------------------------------ lesson content ------------------------------ */
+
+export interface LessonContentViewer {
+  id?: string;
+  role?: string;
+}
+
+/**
+ * Returns the full lesson payload (video URL, article body, attachments) for
+ * authorized viewers: the course owner, admins, actively-enrolled students,
+ * and anonymous visitors for free previews of published courses.
+ */
+export async function getLessonContent(
+  slug: string,
+  lessonId: string,
+  viewer: LessonContentViewer,
+): Promise<LessonDetail | null> {
+  const course = await CourseModel.findOne({ slug, deletedAt: null });
+  if (!course) {
+    return null;
+  }
+
+  const lesson = await LessonModel.findOne({ _id: lessonId, course: course._id });
+  if (!lesson) {
+    return null;
+  }
+
+  const isOwner = viewer.id !== undefined && String(course.instructor) === viewer.id;
+  const isAdmin = viewer.role === "admin";
+  if (!isOwner && !isAdmin) {
+    const published = course.status === "published";
+    if (published && lesson.isFreePreview) {
+      // Free previews are open to everyone.
+    } else if (!viewer.id) {
+      throw ApiError.unauthorized("Sign in to access this lesson", "SIGN_IN_REQUIRED");
+    } else {
+      const enrolled = await EnrollmentModel.exists({
+        user: viewer.id,
+        course: course._id,
+        status: { $in: ["active", "completed"] },
+      });
+      if (!enrolled) {
+        throw ApiError.forbidden("Enroll in this course to access this lesson", "NOT_ENROLLED");
+      }
+    }
+  }
+
+  return {
+    id: String(lesson._id),
+    title: lesson.title,
+    type: lesson.type,
+    durationMinutes: lesson.durationMinutes,
+    isFreePreview: lesson.isFreePreview,
+    ...(lesson.videoUrl ? { videoUrl: lesson.videoUrl } : {}),
+    ...(lesson.content ? { content: lesson.content } : {}),
+    ...(lesson.fileUrl ? { fileUrl: lesson.fileUrl } : {}),
+    ...(lesson.externalUrl ? { externalUrl: lesson.externalUrl } : {}),
+    attachments: lesson.attachments,
+  };
 }

@@ -9,6 +9,7 @@ export const courseRoutes = Router();
 courseRoutes.use(optionalAuthenticate);
 courseRoutes.get("/", courseController.listCourses);
 courseRoutes.get("/:slug", courseController.getCourse);
+courseRoutes.get("/:slug/lessons/:lessonId", courseController.getLesson);
 
 /* ---------------------------- instructor ---------------------------- */
 const instructorOnly = [authenticate, authorize("instructor", "admin")] as const;

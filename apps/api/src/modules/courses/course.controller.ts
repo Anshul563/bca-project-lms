@@ -55,6 +55,19 @@ export const getCourse = asyncHandler(async (req: Request, res: Response) => {
   sendSuccess(res, result.course);
 });
 
+export const getLesson = asyncHandler(async (req: Request, res: Response) => {
+  const slug = slugSchema.parse(req.params.slug);
+  const lessonId = objectIdSchema.parse(req.params.lessonId);
+  const lesson = await courseService.getLessonContent(slug, lessonId, {
+    id: req.user?.id,
+    role: req.user?.role,
+  });
+  if (!lesson) {
+    throw ApiError.notFound("Lesson not found");
+  }
+  sendSuccess(res, lesson);
+});
+
 /* ----------------------------- instructor CRUD ----------------------------- */
 
 export const createCourse = asyncHandler(async (req: Request, res: Response) => {

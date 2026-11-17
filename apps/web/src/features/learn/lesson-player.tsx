@@ -218,23 +218,27 @@ export function LessonPlayer({ slug, lessonId }: LessonPlayerProps) {
             </Button>
           )}
 
-          <Button
-            variant="outline"
-            disabled={!nextLesson}
-            onClick={() => (isCurrentCompleted ? nextLesson && router.replace(`/courses/${slug}/learn/${nextLesson.id}` as Route) : void onComplete(true))}
-          >
-            {nextLesson ? (
-              <>
-                {isCurrentCompleted ? "Next lesson" : "Complete & continue"}
+          {nextLesson ? (
+            <Button
+              variant="outline"
+              onClick={() => (isCurrentCompleted ? router.replace(`/courses/${slug}/learn/${nextLesson.id}` as Route) : void onComplete(true))}
+            >
+              {isCurrentCompleted ? "Next lesson" : "Complete & continue"}
+              <ArrowRight aria-hidden />
+            </Button>
+          ) : isCurrentCompleted ? (
+            <Button asChild>
+              <Link href={`/courses/${slug}/quiz` as Route}>
+                Take the final quiz
                 <ArrowRight aria-hidden />
-              </>
-            ) : (
-              <>
-                <ArrowRight aria-hidden />
-                End of course
-              </>
-            )}
-          </Button>
+              </Link>
+            </Button>
+          ) : (
+            <Button disabled onClick={() => void onComplete(true)}>
+              Complete & continue
+              <ArrowRight aria-hidden />
+            </Button>
+          )}
         </div>
       </div>
 

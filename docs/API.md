@@ -29,7 +29,8 @@ machine-readable OpenAPI will be published at `/api/v1/docs`.
 | Enrollment | `POST /enrollments`, `GET /enrollments/my`, `DELETE /enrollments/:id` | 4 ✅ |
 | Progress | `GET /progress/courses/:courseId`, `POST /progress/courses/:courseId/lessons/:lessonId/complete` | 4 ✅ |
 | Lesson content | `GET /courses/:slug/lessons/:lessonId` | 4 ✅ |
-| Quizzes | `/courses/:id/quizzes`, attempts/grading | 5 |
+| Progress | `GET /progress/courses/:courseId`, `POST .../lessons/:lessonId/complete` | 4 ✅ |
+| Quizzes | `/courses/id/:id/quizzes` (author), `/courses/id/:courseId/quiz` + attempts (student) | 5 ✅ |
 | Reviews | `/courses/:id/reviews` | 6 |
 | Certificates | `/certificates`, verify | 6 |
 | Notifications | `/notifications` | 7 |
@@ -137,4 +138,43 @@ non-active enrollment), `422` invalid courseId.
 > Payment hook: paid courses will create an `Order` and enroll on payment
 > success (Phase 8); enrollments are currently mock-paid and active
 > immediately.
+
+## Lesson content & curriculum outline (Phase 4 — implemented)
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET | `/courses/:slug` | Public/optional | Full outline visible on published courses; drafts only to their owner |
+| GET | `/courses/:slug/lessons/:lessonId` | Public/optional/Bearer | Full lesson payload. Access: owner, admin, enrolled (active/completed), anonymous on free previews. Errors: `401 SIGN_IN_REQUIRED`, `403 NOT_ENROLLED` |
+
+## Progress (Phase 4 — implemented)
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET | `/progress/courses/:courseId` | Bearer | `{ totalLessons, completedLessons, progressPercent, completedLessonIds, lastLessonId?, completedAt? }` |
+| POST | `/progress/courses/:courseId/lessons/:lessonId/complete` | Bearer | Idempotent; recomputes percent, records resume point, auto-completes enrollment at 100%. Errors: `403 NOT_ENROLLED`, `403 ENROLLMENT_CANCELLED`, `404` (lesson not in course) |
+
+## Quizzes (Phase 5 — implemented)
+
+One quiz per course. Authoring indexes (`correctOptionIndexes`) are converted
+server-side to stable option ids (`correctOptionIds`); correct answers never
+leave the server on the student endpoint. Grading = exact set match per
+question; percent = earned/total points; pass threshold = quiz `passScore`
+(default 70). Retakes unlimited (MVP).
+
+Instructor (Bearer, role instructor/admin, course owner):
+
+| Method | Path | Notes |
+|---|---|---|
+| POST | `/courses/id/:id/quizzes` | Create or replace the course quiz. 200 on both (upsert). Body: `{ title, passScore?, questions: [{ text, type, points?, correctOptionIndexes, options }] }`. 400 `INVALID_OPTION_INDEX` if an index is out of range |
+| GET | `/courses/id/:id/quizzes` | Includes `correctOptionIds` per question; 404 if none exists |
+| GET | `/courses/id/:courseId/quizzes/attempts` | All attempts on the course (newest first, max 100) |
+
+Student (Bearer, enrolled):
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/courses/id/:courseId/quiz` | Questions + options only — no grading data. 403 `NOT_ENROLLED`, 404 if no quiz |
+| POST | `/courses/id/:courseId/quiz/attempts` | `{ answers: [{ questionId, selectedOptionIds }] }` → 201 with `{ scorePercent, passed, passScore, totalPoints, earnedPoints, perQuestion, submittedAt }`. Unanswered questions score 0; 400 `EMPTY_ATTEMPT` if no question is answered |
+| GET | `/courses/id/:courseId/quiz/attempts/my` | Own attempts, newest first (max 50) |
+
 

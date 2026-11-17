@@ -1,4 +1,4 @@
-import type { CourseLevel, CourseStatus, LessonType } from "../enums.js";
+import type { CourseLevel, CourseStatus, LessonType, QuestionType } from "../enums.js";
 import type { PaginationMeta } from "./http.js";
 export interface PublicCategory {
   id: string;
@@ -92,4 +92,50 @@ export interface CourseProgress {
   completedLessonIds: string[];
   lastLessonId?: string;
   completedAt?: string;
+}
+
+/* -------------------------------- quizzes -------------------------------- */
+
+/** One quiz per course (MVP); stored with grading data server-side only. */
+export interface PublicQuiz {
+  id: string;
+  courseId: string;
+  title: string;
+  passScore: number;
+  questions: PublicQuizQuestion[];
+  hasQuiz: true;
+}
+
+/** Question shape handed to students — no correct answers included. */
+export interface PublicQuizQuestion {
+  id: string;
+  text: string;
+  type: QuestionType;
+  points: number;
+  options: { id: string; text: string }[];
+}
+
+/** Instructor view includes grading data. */
+export interface InstructorQuiz extends Omit<PublicQuiz, "questions" | "hasQuiz"> {
+  questions: (PublicQuizQuestion & { correctOptionIds: string[] })[];
+  hasQuiz?: undefined;
+}
+
+export interface QuizAttemptResult {
+  id: string;
+  quizId: string;
+  scorePercent: number;
+  passed: boolean;
+  passScore: number;
+  totalPoints: number;
+  earnedPoints: number;
+  perQuestion: { questionId: string; correct: boolean }[];
+  submittedAt: string;
+}
+
+export interface QuizAttemptSummary {
+  id: string;
+  scorePercent: number;
+  passed: boolean;
+  submittedAt: string;
 }

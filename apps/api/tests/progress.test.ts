@@ -4,8 +4,6 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app.js";
 import { setupTestDatabase, teardownTestDatabase } from "./helpers/database.js";
 import { CourseModel } from "../src/modules/courses/course.model.js";
-import { LessonModel } from "../src/modules/courses/lesson.model.js";
-import { SectionModel } from "../src/modules/courses/section.model.js";
 import { UserModel } from "../src/modules/users/user.model.js";
 
 let app: ReturnType<typeof createApp>;

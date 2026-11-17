@@ -94,6 +94,40 @@ export const lessonParamsSchema = z.object({
   lessonId: objectIdSchema,
 });
 
+/* -------------------------------- quizzes -------------------------------- */
+
+export const quizQuestionSchema = z.object({
+  text: z.string().trim().min(3).max(500),
+  type: z.enum(["single_choice", "multiple_choice", "true_false"]).default("single_choice"),
+  points: z.coerce.number().int().min(1).max(100).default(1),
+  /** Zero-based indexes into `options` marking correct answers (never exposed to students). */
+  correctOptionIndexes: z.array(z.number().int().min(0).max(9)).min(1).max(9),
+  options: z.array(z.object({ text: z.string().trim().min(1).max(200) })).min(2).max(10),
+});
+
+export type QuizQuestionInput = z.infer<typeof quizQuestionSchema>;
+
+export const quizBodySchema = z.object({
+  title: z.string().trim().min(3).max(120),
+  passScore: z.coerce.number().min(0).max(100).default(70),
+  questions: z.array(quizQuestionSchema).min(1).max(50),
+});
+
+export type QuizInput = z.infer<typeof quizBodySchema>;
+
+export const attemptBodySchema = z.object({
+  answers: z
+    .array(
+      z.object({
+        questionId: objectIdSchema,
+        selectedOptionIds: z.array(objectIdSchema).default([]),
+      }),
+    )
+    .min(1),
+});
+
+export type AttemptInput = z.infer<typeof attemptBodySchema>;
+
 /** Public catalog filters (all optional). */
 export const courseListQuerySchema = listQuerySchema.extend({
   category: slugSchema.optional(),

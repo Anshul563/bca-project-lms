@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { CourseProgress, PublicCourseDetail } from "@lms/shared";
 
 import { apiFetch } from "@/lib/api-client";
@@ -16,7 +16,7 @@ import type { Route } from "next";
 export function LearnRedirector({ slug }: { slug: string }) {
   const router = useRouter();
   const { isPending: sessionPending } = useSession();
-  const [navigated, setNavigated] = useState(false);
+  const navigatedRef = useRef(false);
 
   const detailQuery = useQuery({
     queryKey: ["course", slug],
@@ -32,13 +32,13 @@ export function LearnRedirector({ slug }: { slug: string }) {
   });
 
   useEffect(() => {
-    if (navigated) {
+    if (navigatedRef.current) {
       return;
     }
 
     // Anonymous visitors or not-yet-enrolled learners go to the course page.
     if (detailQuery.data && progressQuery.isError) {
-      setNavigated(true);
+      navigatedRef.current = true;
       router.replace(`/courses/${slug}` as Route);
       return;
     }
@@ -59,9 +59,9 @@ export function LearnRedirector({ slug }: { slug: string }) {
       ? (flat.find((lesson) => lesson.id === progress.lastLessonId) ?? firstIncomplete)
       : firstIncomplete;
 
-    setNavigated(true);
+    navigatedRef.current = true;
     router.replace(`/courses/${slug}/learn/${resumeLesson.id}` as Route);
-  }, [detailQuery.data, progressQuery.data, progressQuery.isError, progressQuery.isPending, sessionPending, navigated, router, slug]);
+  }, [detailQuery.data, progressQuery.data, progressQuery.isError, progressQuery.isPending, sessionPending, router, slug]);
 
   return (
     <div className="grid place-items-center py-24" aria-busy="true" aria-live="polite">

@@ -7,6 +7,11 @@ interface LearnLessonPageProps {
   params: Promise<{ slug: string; lessonId: string }>;
 }
 
+// The player gates content per-user (session + enrollment), so it renders at
+// request time inside its Suspense boundary; instant prerender is disabled
+// for this segment (cacheComponents).
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Lesson",
 };

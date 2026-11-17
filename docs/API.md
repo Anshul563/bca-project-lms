@@ -27,7 +27,8 @@ machine-readable OpenAPI will be published at `/api/v1/docs`.
 | Categories | `GET /categories`, `GET /categories/:id` (public); create/update/delete (admin) | 3 ✅ |
 | Courses | `GET /courses`, `GET /courses/:slug` (public); instructor CRUD, sections/lessons, reorder, publish flow | 3 ✅ |
 | Enrollment | `POST /enrollments`, `GET /enrollments/my`, `DELETE /enrollments/:id` | 4 ✅ |
-| Progress | `/progress/:courseId/lessons/:lessonId/complete` etc. | 4 (next) |
+| Progress | `GET /progress/courses/:courseId`, `POST /progress/courses/:courseId/lessons/:lessonId/complete` | 4 ✅ |
+| Lesson content | `GET /courses/:slug/lessons/:lessonId` | 4 ✅ |
 | Quizzes | `/courses/:id/quizzes`, attempts/grading | 5 |
 | Reviews | `/courses/:id/reviews` | 6 |
 | Certificates | `/certificates`, verify | 6 |

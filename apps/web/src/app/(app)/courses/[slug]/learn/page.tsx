@@ -7,6 +7,10 @@ interface LearnPageProps {
   params: Promise<{ slug: string }>;
 }
 
+// The redirector resolves the resume point from the signed-in user's
+// progress, so it renders at request time (cacheComponents opt-out).
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Continue learning",
 };

@@ -10,6 +10,7 @@ import { AuthGuard } from "@/components/auth/auth-guard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiFetch, tryApi } from "@/lib/api-client";
+import type { Route } from "next";
 
 function progressLabel(entry: PublicEnrollment): string {
   return entry.status === "completed" ? "Completed" : `${Math.round(entry.progressPercent)}% complete`;
@@ -51,7 +52,7 @@ function EnrollmentCard({ entry }: { entry: PublicEnrollment }) {
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button asChild size="sm">
-            <Link href={`/courses/${entry.course?.slug ?? ""}`}>
+            <Link href={entry.course ? (`/courses/${entry.course.slug}/learn` as Route) : "/courses"}>
               <PlayCircle aria-hidden />
               {entry.status === "completed" ? "Review" : "Continue"}
             </Link>

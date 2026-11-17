@@ -172,6 +172,8 @@ describe("progress tracking", () => {
   });
 
   it("rejects completion of lessons outside the course", async () => {
+    // Non-enrolled users are rejected with 403 before existence checks
+    // (course existence is never leaked), so enroll first.
     const otherCourse = await request(app)
       .post("/api/v1/courses")
       .set("Authorization", `Bearer ${instructorToken}`)
@@ -179,10 +181,26 @@ describe("progress tracking", () => {
         title: "Unrelated Course",
         description: "This description exists purely to pass the thirty character validation requirement.",
       });
+    const otherCourseId = otherCourse.body.data.id as string;
+    await CourseModel.updateOne({ _id: otherCourseId }, { $set: { status: "published", publishedAt: new Date() } });
+    const enroll = await request(app)
+      .post("/api/v1/enrollments")
+      .set("Authorization", `Bearer ${studentToken}`)
+      .send({ courseId: otherCourseId });
+    expect(enroll.status).toBe(201);
+
+    // The lesson belongs to the first course — completing it under the other
+    // course's id must 404, not corrupt progress.
     const res = await request(app)
-      .post(`/api/v1/progress/courses/${otherCourse.body.data.id}/lessons/${lessonIds[0]}/complete`)
+      .post(`/api/v1/progress/courses/${otherCourseId}/lessons/${lessonIds[0]}/complete`)
       .set("Authorization", `Bearer ${studentToken}`);
     expect(res.status).toBe(404);
+
+    // And the unrelated course's progress stays untouched.
+    const progress = await request(app)
+      .get(`/api/v1/progress/courses/${otherCourseId}`)
+      .set("Authorization", `Bearer ${studentToken}`);
+    expect(progress.body.data.completedLessons).toBe(0);
   });
 
   it("requires authentication", async () => {

@@ -1,4 +1,4 @@
-import type { ApiErrorDetail, PaginationMeta } from "@lms/shared";
+import type { ApiErrorDetail, PaginationMeta, UploadedFile } from "@lms/shared";
 
 /**
  * Typed fetch wrapper for the LMS API.
@@ -188,6 +188,43 @@ export async function tryApi<TData>(
 ): Promise<{ ok: true; data: TData } | { ok: false; error: ApiError }> {
   try {
     return { ok: true, data: await apiFetch<TData>(path, options) };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { ok: false, error };
+    }
+    return { ok: false, error: new ApiError(0, "Network error — is the API running?", "NETWORK") };
+  }
+}
+
+/** Multipart upload to `/uploads`; returns the stored file metadata. */
+export async function uploadFile(file: File): Promise<UploadedFile> {
+  async function send(): Promise<Response> {
+    const formData = new FormData();
+    formData.append("file", file);
+    return fetch(`${apiUrl}/uploads`, {
+      method: "POST",
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      body: formData,
+      credentials: "include",
+    });
+  }
+
+  let response = await send();
+  if (response.status === 401) {
+    const refreshed = await refreshSessionOnce();
+    if (refreshed) {
+      response = await send();
+    }
+  }
+  return parseEnvelope<UploadedFile>(response);
+}
+
+/** Upload helper for forms: returns `{ data }` or a serializable failure. */
+export async function tryUpload(
+  file: File,
+): Promise<{ ok: true; data: UploadedFile } | { ok: false; error: ApiError }> {
+  try {
+    return { ok: true, data: await uploadFile(file) };
   } catch (error) {
     if (error instanceof ApiError) {
       return { ok: false, error };

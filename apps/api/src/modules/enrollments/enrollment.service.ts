@@ -43,25 +43,44 @@ export async function enroll(userId: string, courseId: string): Promise<PublicEn
   if (!course) {
     throw ApiError.notFound("Course not found or not open for enrollment");
   }
+  if (course.price > 0) {
+    // Paid courses enroll through the order/payment flow (`POST /orders`).
+    throw new ApiError(
+      402,
+      "PAYMENT_REQUIRED",
+      "This is a paid course — complete checkout to enroll",
+    );
+  }
 
+  const enrollment = await activateEnrollmentRecord(userId, course);
+  return toPublicEnrollment({ enrollment, course: course as never });
+}
+
+/**
+ * Creates (or reactivates a cancelled) enrollment and bumps the course
+ * counter. Shared by free enrollment and the payment success path.
+ */
+export async function activateEnrollmentRecord(
+  userId: string,
+  course: { _id: Types.ObjectId },
+): Promise<EnrollmentDoc> {
   const existing = await EnrollmentModel.findOne({ user: userId, course: course._id });
   if (existing && existing.status === "cancelled") {
     existing.status = "active";
+    existing.progressPercent = 0;
     existing.cancelledAt = undefined;
+    existing.completedAt = undefined;
     await existing.save();
     await CourseModel.updateOne({ _id: course._id }, { $inc: { enrollmentCount: 1 } });
-    return toPublicEnrollment({ enrollment: existing, course: course as never });
+    return existing;
   }
   if (existing) {
     throw ApiError.conflict("You are already enrolled in this course", "ALREADY_ENROLLED");
   }
 
-  // Payment hook: paid courses would create an Order here and enroll on
-  // payment success. MVP marks every enrollment active (mock-paid).
   const enrollment = await EnrollmentModel.create({ user: userId, course: course._id });
   await CourseModel.updateOne({ _id: course._id }, { $inc: { enrollmentCount: 1 } });
-
-  return toPublicEnrollment({ enrollment, course: course as never });
+  return enrollment;
 }
 
 export async function listMyEnrollments(

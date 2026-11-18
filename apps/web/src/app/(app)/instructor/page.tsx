@@ -1,11 +1,12 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Star, Users } from "lucide-react";
+import { BookOpen, Pencil, Plus, Star, Users } from "lucide-react";
 import Link from "next/link";
 import type { PublicCourseSummary } from "@lms/shared";
 
 import { AuthGuard } from "@/components/auth/auth-guard";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiFetchWithMeta } from "@/lib/api-client";
 
@@ -19,9 +20,17 @@ function InstructorDashboard() {
 
   return (
     <div className="grid gap-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Instructor studio</h1>
-        <p className="text-muted-foreground">Your courses and how they&apos;re performing.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Instructor studio</h1>
+          <p className="text-muted-foreground">Your courses and how they&apos;re performing.</p>
+        </div>
+        <Button asChild>
+          <Link href="/instructor/courses/new">
+            <Plus aria-hidden />
+            New course
+          </Link>
+        </Button>
       </div>
 
       {myCoursesQuery.isPending ? (
@@ -38,9 +47,12 @@ function InstructorDashboard() {
         <div className="grid place-items-center gap-3 rounded-lg border border-dashed p-12 text-center">
           <BookOpen className="size-8 text-muted-foreground" aria-hidden />
           <p className="text-muted-foreground">You haven&apos;t created any courses yet.</p>
-          <p className="text-xs text-muted-foreground">
-            Course creation tooling arrives with the full instructor studio in the next phase.
-          </p>
+          <Button asChild size="sm">
+            <Link href="/instructor/courses/new">
+              <Plus aria-hidden />
+              Create your first course
+            </Link>
+          </Button>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -66,6 +78,21 @@ function InstructorDashboard() {
                     Admin feedback: {course.reviewNote}
                   </p>
                 ) : null}
+                <div className="flex items-center justify-between gap-2 pt-1">
+                  {course.status ? (
+                    <span className="text-xs capitalize text-muted-foreground">
+                      {course.status.replace("_", " ")}
+                    </span>
+                  ) : (
+                    <span />
+                  )}
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={`/instructor/courses/${course.id}`}>
+                      <Pencil aria-hidden />
+                      Edit course
+                    </Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}

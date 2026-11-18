@@ -19,8 +19,8 @@ out/
 !.env.example
 !.env.local.example
 
-# Local storage uploads
-uploads/
+# Local storage uploads (dev-only; production uses object storage)
+apps/api/uploads/
 data/
 
 # Logs
@@ -36,3 +36,4 @@ pnpm-debug.log*
 
 # Docker volumes
 .docker/
+

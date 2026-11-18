@@ -37,6 +37,32 @@ function toLessonPayload(lesson: { _id: Types.ObjectId; title: string; type: str
   };
 }
 
+/** Owner-facing lesson payload including authoring fields (content, media URLs). */
+function toManagedLessonPayload(lesson: {
+  _id: Types.ObjectId;
+  title: string;
+  type: string;
+  durationMinutes: number;
+  isFreePreview: boolean;
+  videoUrl?: string | null;
+  content?: string | null;
+  fileUrl?: string | null;
+  externalUrl?: string | null;
+  attachments?: { name: string; url: string }[];
+}) {
+  return {
+    ...toLessonPayload(lesson),
+    ...(lesson.videoUrl ? { videoUrl: lesson.videoUrl } : {}),
+    ...(lesson.content ? { content: lesson.content } : {}),
+    ...(lesson.fileUrl ? { fileUrl: lesson.fileUrl } : {}),
+    ...(lesson.externalUrl ? { externalUrl: lesson.externalUrl } : {}),
+    attachments: (lesson.attachments ?? []).map((attachment) => ({
+      name: attachment.name,
+      url: attachment.url,
+    })),
+  };
+}
+
 /* ------------------------------- public ------------------------------- */
 
 export const listCourses = asyncHandler(async (req: Request, res: Response) => {
@@ -125,7 +151,7 @@ export const getMyCourse = asyncHandler(async (req: Request, res: Response) => {
       id: String(section._id),
       title: section.title,
       order: section.order,
-      lessons: (lessonsBySection.get(String(section._id)) ?? []).map(toLessonPayload),
+      lessons: (lessonsBySection.get(String(section._id)) ?? []).map(toManagedLessonPayload),
     })),
   });
 });

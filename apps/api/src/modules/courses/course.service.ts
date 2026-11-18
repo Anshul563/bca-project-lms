@@ -167,6 +167,7 @@ export async function listCourses(
       price: course.price,
       ratingAverage: course.ratingAverage,
       ratingCount: course.ratingCount,
+      status: course.status,
       ...(course.reviewNote ? { reviewNote: course.reviewNote } : {}),
       enrollmentCount: course.enrollmentCount,
       totalDurationMinutes: course.totalDurationMinutes,

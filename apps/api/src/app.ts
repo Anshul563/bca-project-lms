@@ -7,6 +7,7 @@ import { pinoHttp } from "pino-http";
 import { randomUUID } from "node:crypto";
 
 import { env } from "./config/env.js";
+import { uploadsDir } from "./config/uploads.js";
 import { apiV1Router } from "./routes/index.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { notFoundHandler } from "./middlewares/notFound.js";
@@ -61,6 +62,9 @@ export function createApp(): Express {
   app.use(compression());
   app.use(sanitizeBody);
   app.use(globalLimiter);
+
+  // Locally stored media (dev). Production proxies object storage instead.
+  app.use("/uploads", express.static(uploadsDir, { fallthrough: false, maxAge: "7d", index: false }));
 
   app.use("/api/v1", apiV1Router);
 

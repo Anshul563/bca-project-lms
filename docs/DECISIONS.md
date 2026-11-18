@@ -138,3 +138,31 @@ decision changes.
   matches, so `.`/`(`/etc. in user input are literals (no ReDoS/injection).
 - **`/admin` uses router-level auth**: unlike `/courses`, no public paths share
   that mount, so gating the whole router is safe and simpler.
+
+## Payments & media (Phase 8)
+
+- **Paid courses are gated at enrollment.** `POST /enrollments` rejects paid
+  courses with `402 PAYMENT_REQUIRED`; the only path to an enrollment is a paid
+  order. Free courses continue to enroll directly, so the MVP demo flow does not
+  require checkout.
+- **Payment provider is behind an interface.** `order.service.ts` defines a
+  `PaymentProvider` contract and ships a deterministic `mockProvider` that
+  returns a synthetic reference immediately. A real provider (Stripe/Razorpay)
+  implements `charge` and confirms via webhooks; the order state machine
+  (`pending → paid | failed`) and the enrollment-on-payment hook stay the same.
+- **Order idempotency**: one pending order per `(user, course)` is reused on
+  repeat clicks, and paying an already-paid order is a no-op. Enrollment
+  activation is shared with free enrollment (`activateEnrollmentRecord`).
+- **Uploads are local-disk development storage.** `uploads/` is gitignored and
+  served statically by Express at `/uploads`. Production swaps this for object
+  storage behind the same URL contract — the API and DB only ever store URL
+  strings, never binaries.
+- **Validation is two-layered for uploads**: multer's global byte ceiling
+  catches oversize requests early, then per-MIME limits are enforced after the
+  file is written (unlinking rejected files). Filenames are UUIDs with a
+  sanitized extension, so user input never reaches the filesystem.
+- **Authoring UI covers the full draft lifecycle** (`/instructor/courses/new`,
+  `/instructor/courses/[id]`): metadata + thumbnail upload, section/lesson
+  CRUD, submit-for-review, and inline display of admin `reviewNote`. Lesson
+  authoring is type-aware (article content, video/PDF upload or URL, external
+  link), and the course duration is recalculated server-side.

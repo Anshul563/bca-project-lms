@@ -24,6 +24,8 @@ export interface PublicCourseSummary {
   category?: { id: string; name: string; slug: string };
   instructor: { id: string; name: string; avatar?: string };
   publishedAt?: string;
+  /** Lifecycle state; present on owner lists (public lists are all published). */
+  status?: CourseStatus;
   /** Present on owner views when an admin rejected a review submission. */
   reviewNote?: string;
 }
@@ -195,4 +197,73 @@ export interface AdminCourseSummary {
   publishedAt?: string;
   /** Latest moderation feedback (rejection note shown to the instructor). */
   reviewNote?: string;
+}
+
+/* -------------------------------- orders -------------------------------- */
+
+export interface PublicOrder {
+  id: string;
+  amount: number;
+  currency: string;
+  status: "pending" | "paid" | "failed";
+  provider: "mock";
+  createdAt: string;
+  paidAt?: string;
+  course: {
+    id: string;
+    slug: string;
+    title: string;
+    thumbnail?: string;
+  } | null;
+}
+
+/* -------------------------------- uploads -------------------------------- */
+
+export interface UploadedFile {
+  url: string;
+  mimeType: string;
+  size: number;
+}
+
+/* ---------------------------- course authoring ---------------------------- */
+
+/** Lesson payload for instructors: includes the authoring fields. */
+export interface ManagedLesson extends PublicLesson {
+  videoUrl?: string;
+  content?: string;
+  fileUrl?: string;
+  externalUrl?: string;
+  attachments: { name: string; url: string }[];
+}
+
+export interface ManagedSection {
+  id: string;
+  title: string;
+  order: number;
+  lessons: ManagedLesson[];
+}
+
+/** Full course payload returned by `GET /courses/id/:id` to its owner. */
+export interface ManagedCourseDetail {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  description: string;
+  thumbnail?: string;
+  previewVideoUrl?: string;
+  categoryId?: string;
+  level: CourseLevel;
+  language: string;
+  price: number;
+  tags: string[];
+  requirements: string[];
+  learningOutcomes: string[];
+  status: CourseStatus;
+  ratingAverage: number;
+  ratingCount: number;
+  enrollmentCount: number;
+  totalDurationMinutes: number;
+  reviewNote?: string;
+  sections: ManagedSection[];
 }

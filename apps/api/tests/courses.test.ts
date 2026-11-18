@@ -166,6 +166,28 @@ describe("course lifecycle", () => {
       .set("Authorization", `Bearer ${token}`);
     expect(early.status).toBe(400);
     expect(early.body.message).toMatch(/section/i);
+
+    // Build the curriculum, then confirm the owner view carries authoring fields.
+    const section = await request(app)
+      .post(`/api/v1/courses/id/${id}/sections`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ title: "Getting started" });
+    await request(app)
+      .post(`/api/v1/courses/id/${id}/sections/${section.body.data.id}/lessons`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ title: "Read this first", type: "article", content: "Welcome to the course." });
+
+    const managed = await request(app)
+      .get(`/api/v1/courses/id/${id}`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(managed.status).toBe(200);
+    expect(managed.body.data.sections[0].lessons[0].content).toBe("Welcome to the course.");
+
+    const submit = await request(app)
+      .post(`/api/v1/courses/id/${id}/submit-for-review`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(submit.status).toBe(200);
+    expect(submit.body.data.status).toBe("pending_review");
   });
 });
 

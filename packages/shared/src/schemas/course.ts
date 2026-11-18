@@ -161,3 +161,11 @@ export const certificateSerialParamsSchema = z.object({
 });
 
 export type CertificateSerialParams = z.infer<typeof certificateSerialParamsSchema>;
+
+/* -------------------------------- orders -------------------------------- */
+
+export const orderBodySchema = z.object({
+  courseId: objectIdSchema,
+});
+
+export type OrderInput = z.infer<typeof orderBodySchema>;

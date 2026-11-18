@@ -226,3 +226,39 @@ roles, 401 anonymous).
 Instructor flow: create → add sections/lessons → `POST /courses/id/:id/submit-for-review`
 → admin approve/reject. Rejection notes surface on `/courses/mine/all` and the
 owner management view as `reviewNote`.
+
+## Orders & payments (Phase 8 — implemented)
+
+All `/orders/*` routes require authentication.
+
+| Method | Path | Notes |
+|---|---|---|
+| POST | `/orders` | `{ courseId }` — creates (or reuses) a pending order for a **paid published** course. Responds 201 with `{ id, amount, currency, status, provider, course }`. Free course → 400 `FREE_COURSE`; already enrolled → 409 `ALREADY_ENROLLED` |
+| POST | `/orders/:id/pay` | Confirms the (mock) payment, marks the order `paid`, sets `paidAt`, and activates the enrollment. Idempotent: paying a paid order returns it unchanged. Only the buyer can pay (others get 404) |
+| GET | `/orders/my` | The caller's most recent 50 orders, newest first |
+
+`POST /enrollments` on a paid course now returns **402 `PAYMENT_REQUIRED`** —
+paid courses only enroll through the order/payment flow. Free courses keep
+using `POST /enrollments` directly.
+
+## Uploads (Phase 8 — implemented)
+
+| Method | Path | Notes |
+|---|---|---|
+| POST | `/uploads` | `multipart/form-data` with a single `file` field. Roles: `instructor`, `admin`. Returns 201 `{ url, mimeType, size }` where `url` is absolute (`<api-origin>/uploads/<uuid>.<ext>`) |
+| GET | `/uploads/:filename` | Public static file serving (7-day cache). Served by the API in development |
+
+Allowed types / limits: JPEG/PNG/WebP/GIF **5 MB**, PDF **20 MB**,
+MP4/WebM/MOV **200 MB**. Anything else → 400 `UNSUPPORTED_FILE_TYPE`; oversize →
+400 `FILE_TOO_LARGE`. Uploaded URLs are attached to courses via
+`PATCH /courses/id/:id` (`thumbnail`, `previewVideoUrl`) and to lessons via
+`videoUrl` / `fileUrl`.
+
+### Instructor authoring endpoints (recap)
+
+`POST /courses` → `POST /courses/id/:id/sections` →
+`POST /courses/id/:id/sections/:sectionId/lessons` →
+`PATCH /courses/id/:id` (details, thumbnail) →
+`POST /courses/id/:id/submit-for-review` → admin review. `GET /courses/id/:id`
+returns the full owner view including lesson `content`, media URLs, and any
+`reviewNote`.

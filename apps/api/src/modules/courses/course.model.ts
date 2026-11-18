@@ -22,6 +22,8 @@ export interface ICourse {
   enrollmentCount: number;
   totalDurationMinutes: number;
   publishedAt?: Date;
+  /** Admin feedback after a rejected review submission (cleared on approval). */
+  reviewNote?: string;
   deletedAt?: Date | null;
   createdAt: Date;
 }
@@ -55,6 +57,7 @@ const courseSchema = new mongoose.Schema<ICourse>(
     enrollmentCount: { type: Number, default: 0 },
     totalDurationMinutes: { type: Number, default: 0 },
     publishedAt: { type: Date },
+    reviewNote: { type: String, trim: true, maxlength: 1000 },
     deletedAt: { type: Date, default: null },
   },
   { timestamps: true },

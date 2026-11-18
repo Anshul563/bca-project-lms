@@ -20,6 +20,7 @@ const instructorApplicationSchema = new mongoose.Schema(
     },
     reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     reviewedAt: { type: Date },
+    reviewNote: { type: String, trim: true, maxlength: 500 },
   },
   { timestamps: true },
 );

@@ -10,6 +10,7 @@ import { progressRoutes } from "./../modules/progress/progress.routes.js";
 import { quizRoutes } from "./../modules/quizzes/quiz.routes.js";
 import { reviewRoutes } from "./../modules/reviews/review.routes.js";
 import { certificateRoutes } from "./../modules/certificates/certificate.routes.js";
+import { adminRoutes } from "./../modules/admin/admin.routes.js";
 
 export const apiV1Router = Router();
 
@@ -23,3 +24,4 @@ apiV1Router.use("/progress", progressRoutes);
 apiV1Router.use("/courses", quizRoutes);
 apiV1Router.use("/courses", reviewRoutes);
 apiV1Router.use("/certificates", certificateRoutes);
+apiV1Router.use("/admin", adminRoutes);

@@ -118,3 +118,23 @@ decision changes.
 - Quiz/review/certificate routes apply `authenticate` **per-route**, never via
   `router.use`, because multiple routers share the `/courses` mount and
   router-level auth would gate unrelated public paths.
+
+## Admin moderation (Phase 7)
+
+- **Course lifecycle stays four-state**: `draft → pending_review → published`
+  (approve) or `pending_review → draft` (reject with a required note).
+  Rejections store `reviewNote` on the course; it is cleared on approval and
+  exposed only on owner views (public detail omits it).
+- **Instructor applications are a separate collection** with `reviewNote` for
+  rejection reasons. Approving flips `User.role` to `instructor` without
+  touching sessions (the authenticator re-reads role per request). Rejected
+  applicants may re-apply, which resets the application to `pending`.
+- **User administration safeguards**: admins cannot modify their own
+  role/status (`CANNOT_MODIFY_SELF`), and a defensive `LAST_ADMIN` check
+  prevents demoting/suspending the final active admin (normally unreachable
+  through the API because the caller is always an active admin). Suspension
+  clears `refreshSessions` so existing sessions die on the next refresh.
+- **Search inputs are regex-escaped** before building case-insensitive
+  matches, so `.`/`(`/etc. in user input are literals (no ReDoS/injection).
+- **`/admin` uses router-level auth**: unlike `/courses`, no public paths share
+  that mount, so gating the whole router is safe and simpler.

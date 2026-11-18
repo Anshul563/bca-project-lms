@@ -61,6 +61,11 @@ function InstructorDashboard() {
                   </span>
                   <span>{Math.round(course.totalDurationMinutes / 60)}h</span>
                 </div>
+                {course.reviewNote ? (
+                  <p className="rounded-md bg-destructive/10 px-2 py-1.5 text-xs text-destructive">
+                    Admin feedback: {course.reviewNote}
+                  </p>
+                ) : null}
               </CardContent>
             </Card>
           ))}

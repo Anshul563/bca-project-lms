@@ -24,6 +24,8 @@ export interface PublicCourseSummary {
   category?: { id: string; name: string; slug: string };
   instructor: { id: string; name: string; avatar?: string };
   publishedAt?: string;
+  /** Present on owner views when an admin rejected a review submission. */
+  reviewNote?: string;
 }
 
 export interface CourseList {
@@ -176,4 +178,21 @@ export interface PublicCertificate {
   /** Completion snapshot at issuance time. */
   lessonsCompleted: number;
   totalLessons: number;
+}
+
+/* ------------------------------- admin ------------------------------- */
+
+export interface AdminCourseSummary {
+  id: string;
+  slug: string;
+  title: string;
+  status: CourseStatus;
+  price: number;
+  level: CourseLevel;
+  totalDurationMinutes: number;
+  instructor: { id: string; name: string };
+  createdAt: string;
+  publishedAt?: string;
+  /** Latest moderation feedback (rejection note shown to the instructor). */
+  reviewNote?: string;
 }

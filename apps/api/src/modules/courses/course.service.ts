@@ -167,6 +167,7 @@ export async function listCourses(
       price: course.price,
       ratingAverage: course.ratingAverage,
       ratingCount: course.ratingCount,
+      ...(course.reviewNote ? { reviewNote: course.reviewNote } : {}),
       enrollmentCount: course.enrollmentCount,
       totalDurationMinutes: course.totalDurationMinutes,
       ...(course.categoryId ? { category: { id: String(course.categoryId._id), name: course.categoryId.name, slug: course.categoryId.slug } } : {}),

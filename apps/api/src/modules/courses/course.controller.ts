@@ -120,6 +120,7 @@ export const getMyCourse = asyncHandler(async (req: Request, res: Response) => {
     ratingCount: course.ratingCount,
     enrollmentCount: course.enrollmentCount,
     totalDurationMinutes: course.totalDurationMinutes,
+    ...(course.reviewNote ? { reviewNote: course.reviewNote } : {}),
     sections: sections.map((section) => ({
       id: String(section._id),
       title: section.title,

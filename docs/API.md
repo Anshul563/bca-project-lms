@@ -208,3 +208,21 @@ Certificates are issued **automatically and idempotently**:
 | GET | `/certificates/:serial` | Public | Verification view; case-insensitive serial, 404 if unknown |
 
 Serial format: `LMS-<year>-<8 hex chars>` (e.g. `LMS-2026-A1B2C3D4`), unique.
+
+## Admin (Phase 7 — implemented)
+
+All `/admin/*` routes require `authenticate` + role `admin` (403 for other
+roles, 401 anonymous).
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/admin/instructor-applications` | `?status=pending|approved|rejected&page&limit`; includes applicant name/email/bio/website |
+| PATCH | `/admin/instructor-applications/:id` | `{ action: "approve" | "reject", reason? }` — rejection requires a reason (422 otherwise). Approve promotes the user to `instructor` immediately. 409 `ALREADY_REVIEWED` if not pending |
+| GET | `/admin/users` | `?search&role&status&page&limit` — search is a case-insensitive name/email match |
+| PATCH | `/admin/users/:id` | `{ role?, status? }` (at least one). Suspension revokes refresh sessions immediately. 400 `CANNOT_MODIFY_SELF`, 409 `LAST_ADMIN` (defensive) |
+| GET | `/admin/courses` | `?status&search&page&limit` — moderation queue; includes instructor name and any prior `reviewNote` |
+| PATCH | `/admin/courses/:id/review` | `{ action: "approve" | "reject", note? }` — only `pending_review` courses (409 `NOT_PENDING_REVIEW`). Approve → `published` + `publishedAt`, clears `reviewNote`; reject → `draft` + `reviewNote` (required, 422 otherwise) shown to the instructor |
+
+Instructor flow: create → add sections/lessons → `POST /courses/id/:id/submit-for-review`
+→ admin approve/reject. Rejection notes surface on `/courses/mine/all` and the
+owner management view as `reviewNote`.

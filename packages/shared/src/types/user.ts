@@ -27,3 +27,26 @@ export interface AuthSuccess {
   user: PublicUser;
   tokens: TokenPair;
 }
+
+/* ------------------------------- admin ------------------------------- */
+
+export interface AdminInstructorApplication {
+  id: string;
+  user: { id: string; name: string; email: string };
+  bio: string;
+  website?: string;
+  status: "pending" | "approved" | "rejected";
+  reviewNote?: string;
+  reviewedAt?: string;
+  createdAt: string;
+}
+
+export interface AdminUserSummary {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  status: AccountStatus;
+  createdAt: string;
+  lastLoginAt?: string;
+}

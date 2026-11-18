@@ -139,3 +139,41 @@ export interface QuizAttemptSummary {
   passed: boolean;
   submittedAt: string;
 }
+
+/* ---------------------------- reviews ---------------------------- */
+
+export interface PublicReview {
+  id: string;
+  rating: number;
+  comment?: string;
+  user: { id: string; name: string; avatar?: string };
+  createdAt: string;
+  updatedAt?: string;
+  /** True when the request came from the review's author. */
+  isMine?: boolean;
+}
+
+export interface ReviewList {
+  items: PublicReview[];
+  meta: PaginationMeta;
+}
+
+/* -------------------------- certificates -------------------------- */
+
+export interface PublicCertificate {
+  id: string;
+  serial: string;
+  issuedAt: string;
+  /** Present when the course quiz was passed before issuance. */
+  quizScorePercent?: number;
+  learner: { id: string; name: string };
+  course: {
+    id: string;
+    slug: string;
+    title: string;
+    instructorName: string;
+  };
+  /** Completion snapshot at issuance time. */
+  lessonsCompleted: number;
+  totalLessons: number;
+}

@@ -8,6 +8,8 @@ import { courseRoutes } from "./../modules/courses/course.routes.js";
 import { enrollmentRoutes } from "./../modules/enrollments/enrollment.routes.js";
 import { progressRoutes } from "./../modules/progress/progress.routes.js";
 import { quizRoutes } from "./../modules/quizzes/quiz.routes.js";
+import { reviewRoutes } from "./../modules/reviews/review.routes.js";
+import { certificateRoutes } from "./../modules/certificates/certificate.routes.js";
 
 export const apiV1Router = Router();
 
@@ -19,3 +21,5 @@ apiV1Router.use("/courses", courseRoutes);
 apiV1Router.use("/enrollments", enrollmentRoutes);
 apiV1Router.use("/progress", progressRoutes);
 apiV1Router.use("/courses", quizRoutes);
+apiV1Router.use("/courses", reviewRoutes);
+apiV1Router.use("/certificates", certificateRoutes);

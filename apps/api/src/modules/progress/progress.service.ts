@@ -1,6 +1,7 @@
 import type { CourseProgress } from "@lms/shared";
 
 import { ApiError } from "../../utils/ApiError.js";
+import { issueCertificateIfEligible } from "../certificates/certificate.service.js";
 import { CourseModel, type CourseDoc } from "../courses/course.model.js";
 import { LessonModel } from "../courses/lesson.model.js";
 import { EnrollmentModel } from "../enrollments/enrollment.model.js";
@@ -114,6 +115,12 @@ export async function completeLesson(
     enrollment.completedAt = new Date();
   }
   await enrollment.save();
+
+  // Certificate policy: lessons at 100% (+ quiz passed, when the course has
+  // one). Idempotent — a replay or later quiz pass can also finish the job.
+  if (enrollment.status === "completed") {
+    await issueCertificateIfEligible(userId, courseId);
+  }
 
   const completions = await LessonProgressModel.find({ user: userId, course: course._id })
     .select("lesson")

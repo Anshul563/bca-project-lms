@@ -139,3 +139,25 @@ export const courseListQuerySchema = listQuerySchema.extend({
 });
 
 export type CourseListQuery = z.infer<typeof courseListQuerySchema>;
+
+/* ---------------------------- reviews ---------------------------- */
+
+export const reviewBodySchema = z.object({
+  rating: z.coerce.number().int().min(1).max(5),
+  comment: z.string().trim().min(3).max(1000).optional(),
+});
+
+export type ReviewInput = z.infer<typeof reviewBodySchema>;
+
+/* -------------------------- certificates -------------------------- */
+
+export const certificateSerialParamsSchema = z.object({
+  serial: z
+    .string()
+    .trim()
+    .min(6)
+    .max(40)
+    .regex(/^[A-Za-z0-9-]+$/, "Invalid certificate serial"),
+});
+
+export type CertificateSerialParams = z.infer<typeof certificateSerialParamsSchema>;

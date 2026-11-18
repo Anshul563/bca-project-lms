@@ -78,3 +78,22 @@ decision changes.
 - Real email sending — captured/logged until phase 8/9.
 - Stripe/Razorpay integration — interface stub only.
 - Redis — optional store adapter documented, not installed.
+
+## Quizzes (Phase 5)
+
+- **One quiz per course** (MVP). `POST /courses/id/:id/quizzes` upserts
+  (create or replace) and returns 200 for both; documented in docs/API.md.
+- **Correct answers are stored as option ids, authored as indexes.** The
+  authoring payload uses `correctOptionIndexes`; the service generates option
+  ids up front (`new Types.ObjectId()`) and persists `correctOptionIds`.
+  Student endpoints strip all grading data (`PublicQuiz` shape).
+- **Grading** = exact set match between submitted and correct option ids per
+  question; percent = earned/total points; `passed = scorePercent >= passScore`
+  (default 70). Unanswered questions count as incorrect; a submission
+  answering no seeded question is rejected (400 `EMPTY_ATTEMPT`).
+- **Retakes are unlimited** in the MVP; attempt history is kept for review
+  (instructor sees all, student sees own). A pass/attempt gate for
+  certificates is a natural Phase 6 hook.
+- Quiz routes mount on `/courses` alongside the course router
+  (`/id/:courseId/quiz...` for students, `/id/:id/quizzes...` for
+  instructors) — no path collisions with `/:slug` routes.

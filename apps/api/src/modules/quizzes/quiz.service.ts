@@ -9,6 +9,7 @@ import {
 import { Types } from "mongoose";
 
 import { ApiError } from "../../utils/ApiError.js";
+import { issueCertificateIfEligible } from "../certificates/certificate.service.js";
 import { CourseModel } from "../courses/course.model.js";
 import { EnrollmentModel } from "../enrollments/enrollment.model.js";
 import { QuizAttemptModel, QuizModel, type IQuiz, type IQuizQuestion } from "./quiz.model.js";
@@ -222,6 +223,11 @@ export async function submitAttempt(
     passed,
     submittedAt: new Date(),
   });
+
+  // Passing the quiz can be the last requirement for a certificate.
+  if (passed) {
+    await issueCertificateIfEligible(userId, courseId);
+  }
 
   return {
     id: String(attempt._id),

@@ -166,3 +166,29 @@ decision changes.
   CRUD, submit-for-review, and inline display of admin `reviewNote`. Lesson
   authoring is type-aware (article content, video/PDF upload or URL, external
   link), and the course duration is recalculated server-side.
+
+## Production polish (Phase 9)
+
+- **Next.js runs as a standalone bundle** (`output: "standalone"` +
+  `outputFileTracingRoot` pointed at the workspace root). The Docker image ships
+  only the traced server, static assets, and public files — no pnpm store or
+  source tree at runtime.
+- **Two slim multi-stage images**: manifests are copied first for cacheable
+  installs, the target workspace is built, dev dependencies are pruned (API), and
+  the runtime runs as an unprivileged `app` user. Next public env vars are build
+  args because they are inlined at compile time.
+- **Security headers live in `next.config.ts`** (`nosniff`, `DENY` framing,
+  referrer policy, permissions policy, COOP, and HSTS in production) so they
+  apply to every route including static assets. The API keeps helmet and a
+  cross-origin resource policy that allows `/uploads` media.
+- **Upload storage is configured, not hardcoded**: `LOCAL_STORAGE_PATH` and
+  `LOCAL_STORAGE_PUBLIC_URL_PREFIX` drive the disk location and public URL, so a
+  persistent volume or object storage can be swapped in without touching
+  controllers. `STORAGE_PROVIDER` is intentionally local-only in this build to
+  fail fast instead of silently ignoring a Cloudinary setting.
+- **Production Compose is separate** (`docker-compose.prod.yml`, project name
+  `lms-prod`) so it never touches the dev database/volume. Mongo is not exposed
+  publicly; API secrets are required at compose evaluation time and validated
+  again at boot.
+- **Seed data includes a paid course** (`advanced-react-patterns`, $29.99) so a
+  fresh install can exercise the order → pay → enroll path without manual setup.

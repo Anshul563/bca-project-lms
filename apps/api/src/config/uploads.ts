@@ -1,14 +1,22 @@
 import { mkdirSync } from "node:fs";
-import { join } from "node:path";
+import { resolve } from "node:path";
+
+import { env } from "./env.js";
 
 /**
- * Local development storage for uploaded media. A production deployment swaps
- * this for object storage (S3/R2) behind the same URL contract — the API only
- * ever returns a URL string.
+ * Local development storage for uploaded media.
+ *
+ * The storage provider is intentionally local-only in this build: production
+ * deployments mount a persistent volume (or swap this module for an object
+ * storage adapter) behind the same URL contract — the API only ever returns a
+ * URL string and the database never stores binaries.
  */
-export const uploadsDir = join(process.cwd(), "uploads");
+export const uploadsDir = resolve(process.cwd(), env.LOCAL_STORAGE_PATH);
 
 mkdirSync(uploadsDir, { recursive: true });
+
+/** Normalised public path prefix, e.g. `/uploads`. */
+export const uploadsPublicPrefix = `/${env.LOCAL_STORAGE_PUBLIC_URL_PREFIX.replace(/^\/+|\/+$/g, "")}`;
 
 export const UPLOAD_MIME_LIMITS: Record<string, number> = {
   "image/jpeg": 5 * 1024 * 1024,

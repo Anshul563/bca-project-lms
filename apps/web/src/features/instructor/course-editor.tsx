@@ -281,12 +281,15 @@ function EditorBody({ course }: { course: ManagedCourseDetail }) {
         <div className="grid gap-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight">{course.title}</h1>
-            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_CLASSES[course.status]}`}>
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_CLASSES[course.status]}`}
+            >
               {STATUS_LABELS[course.status]}
             </span>
           </div>
           <p className="text-sm text-muted-foreground">
-            {course.sections.length} sections · {lessonCount} lessons · {course.enrollmentCount} learners
+            {course.sections.length} sections · {lessonCount} lessons · {course.enrollmentCount}{" "}
+            learners
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -299,8 +302,16 @@ function EditorBody({ course }: { course: ManagedCourseDetail }) {
             </Button>
           ) : null}
           {canSubmit ? (
-            <Button size="sm" disabled={submitForReview.isPending} onClick={() => void onSubmitForReview()}>
-              {submitForReview.isPending ? <Loader2 className="animate-spin" aria-hidden /> : <Send aria-hidden />}
+            <Button
+              size="sm"
+              disabled={submitForReview.isPending}
+              onClick={() => void onSubmitForReview()}
+            >
+              {submitForReview.isPending ? (
+                <Loader2 className="animate-spin" aria-hidden />
+              ) : (
+                <Send aria-hidden />
+              )}
               Submit for review
             </Button>
           ) : null}
@@ -309,8 +320,8 @@ function EditorBody({ course }: { course: ManagedCourseDetail }) {
 
       {course.status === "pending_review" ? (
         <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:text-amber-300">
-          This course is in the admin review queue. You can keep editing, but its status changes only after a
-          decision.
+          This course is in the admin review queue. You can keep editing, but its status changes
+          only after a decision.
         </p>
       ) : null}
 
@@ -352,7 +363,11 @@ function EditorBody({ course }: { course: ManagedCourseDetail }) {
                 disabled={uploadingThumbnail}
                 onClick={() => thumbnailInput.current?.click()}
               >
-                {uploadingThumbnail ? <Loader2 className="animate-spin" aria-hidden /> : <ImagePlus aria-hidden />}
+                {uploadingThumbnail ? (
+                  <Loader2 className="animate-spin" aria-hidden />
+                ) : (
+                  <ImagePlus aria-hidden />
+                )}
                 {details.thumbnail ? "Replace image" : "Upload image"}
               </Button>
               <p className="text-xs text-muted-foreground">JPG/PNG/WebP/GIF up to 5 MB.</p>
@@ -413,7 +428,9 @@ function EditorBody({ course }: { course: ManagedCourseDetail }) {
                 id="course-level"
                 value={details.level}
                 className="h-9 rounded-md border bg-background px-2 text-sm"
-                onChange={(event) => setDetails({ ...details, level: event.target.value as CourseLevel })}
+                onChange={(event) =>
+                  setDetails({ ...details, level: event.target.value as CourseLevel })
+                }
               >
                 {LEVELS.map((level) => (
                   <option key={level.value} value={level.value}>
@@ -451,7 +468,9 @@ function EditorBody({ course }: { course: ManagedCourseDetail }) {
                 rows={4}
                 value={details.learningOutcomes}
                 className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                onChange={(event) => setDetails({ ...details, learningOutcomes: event.target.value })}
+                onChange={(event) =>
+                  setDetails({ ...details, learningOutcomes: event.target.value })
+                }
               />
             </div>
             <div className="grid gap-2">
@@ -482,14 +501,20 @@ function EditorBody({ course }: { course: ManagedCourseDetail }) {
                 id="course-preview"
                 value={details.previewVideoUrl}
                 placeholder="https://…"
-                onChange={(event) => setDetails({ ...details, previewVideoUrl: event.target.value })}
+                onChange={(event) =>
+                  setDetails({ ...details, previewVideoUrl: event.target.value })
+                }
               />
             </div>
           </div>
 
           <div className="flex justify-end">
             <Button disabled={saveDetails.isPending} onClick={() => void onSaveDetails()}>
-              {saveDetails.isPending ? <Loader2 className="animate-spin" aria-hidden /> : <CheckCircle2 aria-hidden />}
+              {saveDetails.isPending ? (
+                <Loader2 className="animate-spin" aria-hidden />
+              ) : (
+                <CheckCircle2 aria-hidden />
+              )}
               Save changes
             </Button>
           </div>
@@ -500,7 +525,9 @@ function EditorBody({ course }: { course: ManagedCourseDetail }) {
       <Card>
         <CardHeader>
           <CardTitle>Curriculum</CardTitle>
-          <CardDescription>Sections group your lessons. Drag-free ordering keeps the MVP simple.</CardDescription>
+          <CardDescription>
+            Sections group your lessons. Drag-free ordering keeps the MVP simple.
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           {course.sections.length === 0 ? (
@@ -540,7 +567,9 @@ function EditorBody({ course }: { course: ManagedCourseDetail }) {
                       <div className="flex min-w-0 items-center gap-2">
                         <LessonIcon type={lesson.type} />
                         <span className="truncate text-sm">{lesson.title}</span>
-                        <span className="text-xs text-muted-foreground">{lesson.durationMinutes}m</span>
+                        <span className="text-xs text-muted-foreground">
+                          {lesson.durationMinutes}m
+                        </span>
                         {lesson.isFreePreview ? (
                           <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] font-medium">
                             Free preview
@@ -623,8 +652,16 @@ function EditorBody({ course }: { course: ManagedCourseDetail }) {
                 }}
               />
             </div>
-            <Button variant="outline" disabled={addSection.isPending} onClick={() => void onAddSection()}>
-              {addSection.isPending ? <Loader2 className="animate-spin" aria-hidden /> : <Plus aria-hidden />}
+            <Button
+              variant="outline"
+              disabled={addSection.isPending}
+              onClick={() => void onAddSection()}
+            >
+              {addSection.isPending ? (
+                <Loader2 className="animate-spin" aria-hidden />
+              ) : (
+                <Plus aria-hidden />
+              )}
               Add section
             </Button>
           </div>
@@ -701,7 +738,10 @@ function LessonForm({
       }
 
       return lesson
-        ? tryApi<ManagedLesson>(`/courses/id/${courseId}/lessons/${lesson.id}`, { method: "PATCH", body })
+        ? tryApi<ManagedLesson>(`/courses/id/${courseId}/lessons/${lesson.id}`, {
+            method: "PATCH",
+            body,
+          })
         : tryApi<ManagedLesson>(`/courses/id/${courseId}/sections/${sectionId}/lessons`, {
             method: "POST",
             body,
@@ -762,7 +802,8 @@ function LessonForm({
     }
   }
 
-  const mediaAccept = draft.type === "pdf" ? "application/pdf" : "video/mp4,video/webm,video/quicktime";
+  const mediaAccept =
+    draft.type === "pdf" ? "application/pdf" : "video/mp4,video/webm,video/quicktime";
   const mediaValue = draft.type === "pdf" ? draft.fileUrl : draft.videoUrl;
 
   return (
@@ -810,7 +851,9 @@ function LessonForm({
 
       {draft.type === "video" || draft.type === "pdf" ? (
         <div className="grid gap-2">
-          <Label htmlFor={`lesson-media-${sectionId}`}>{draft.type === "pdf" ? "PDF file" : "Video file"}</Label>
+          <Label htmlFor={`lesson-media-${sectionId}`}>
+            {draft.type === "pdf" ? "PDF file" : "Video file"}
+          </Label>
           <div className="flex flex-wrap gap-2">
             <Input
               id={`lesson-media-${sectionId}`}
@@ -832,7 +875,12 @@ function LessonForm({
               className="hidden"
               onChange={(event) => void onMediaSelected(event.target.files?.[0])}
             />
-            <Button type="button" variant="outline" disabled={uploading} onClick={() => mediaInput.current?.click()}>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={uploading}
+              onClick={() => mediaInput.current?.click()}
+            >
               {uploading ? <Loader2 className="animate-spin" aria-hidden /> : null}
               Upload
             </Button>

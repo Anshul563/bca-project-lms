@@ -123,6 +123,89 @@ async function seedDemoCourse(instructorId: string, categoryId: string): Promise
   return true;
 }
 
+async function seedPaidCourse(instructorId: string, categoryId: string): Promise<boolean> {
+  const slug = "advanced-react-patterns";
+  if (await CourseModel.exists({ slug })) {
+    return false;
+  }
+
+  const course = await CourseModel.create({
+    title: "Advanced React Patterns",
+    slug,
+    subtitle: "Composition, performance, and production-grade component design",
+    description:
+      "Take your React skills beyond the basics. This paid course covers compound components, render props, custom hooks, performance profiling, and the patterns used by large production codebases. Includes downloadable exercises and a capstone review.",
+    categoryId,
+    level: "advanced",
+    language: "English",
+    price: 29.99,
+    tags: ["react", "patterns", "performance", "typescript"],
+    requirements: ["Comfortable with React hooks and TypeScript", "A working Node.js environment"],
+    learningOutcomes: [
+      "Design reusable compound components",
+      "Extract complex behaviour into custom hooks",
+      "Profile and fix unnecessary re-renders",
+      "Structure a scalable React codebase",
+    ],
+    instructor: instructorId,
+    status: "published",
+    publishedAt: new Date(),
+  });
+
+  const section1 = await SectionModel.create({ course: course._id, title: "Composition patterns", order: 0 });
+  const section2 = await SectionModel.create({ course: course._id, title: "Performance", order: 1 });
+
+  await LessonModel.insertMany([
+    {
+      course: course._id,
+      section: section1._id,
+      title: "Compound components",
+      type: "article",
+      content:
+        "Compound components share implicit state through context. They let consumers compose markup while the library owns the behaviour.\n\n(Seeded sample content for the paid demo course.)",
+      durationMinutes: 20,
+      isFreePreview: true,
+      order: 0,
+    },
+    {
+      course: course._id,
+      section: section1._id,
+      title: "Custom hooks in depth",
+      type: "video",
+      videoUrl: "https://storage.lms.local/demo/react-hooks.mp4",
+      durationMinutes: 25,
+      isFreePreview: false,
+      order: 1,
+    },
+    {
+      course: course._id,
+      section: section2._id,
+      title: "Profiling render performance",
+      type: "video",
+      videoUrl: "https://storage.lms.local/demo/react-performance.mp4",
+      durationMinutes: 30,
+      isFreePreview: false,
+      order: 0,
+    },
+    {
+      course: course._id,
+      section: section2._id,
+      title: "Exercise: memoisation checklist",
+      type: "pdf",
+      fileUrl: "https://storage.lms.local/demo/memoisation-checklist.pdf",
+      durationMinutes: 15,
+      isFreePreview: false,
+      order: 1,
+    },
+  ]);
+
+  await CourseModel.updateOne(
+    { _id: course._id },
+    { $set: { totalDurationMinutes: 20 + 25 + 30 + 15 } },
+  );
+  return true;
+}
+
 async function seed(): Promise<SeedSummary> {
   await connectDatabase();
 
@@ -188,13 +271,15 @@ async function seed(): Promise<SeedSummary> {
   const webDev = await CategoryModel.findOne({ slug: "web-development" });
   const courseCreated =
     webDev && instructor ? await seedDemoCourse(String(instructor._id), String(webDev._id)) : false;
+  const paidCourseCreated =
+    webDev && instructor ? await seedPaidCourse(String(instructor._id), String(webDev._id)) : false;
 
   return {
     admin: admin?.email ?? "admin@lms.local",
     instructor: instructor?.email ?? "instructor@lms.local",
     student: student?.email ?? "student@lms.local",
     categories: categoryCount,
-    courses: courseCreated ? 1 : 0,
+    courses: (courseCreated ? 1 : 0) + (paidCourseCreated ? 1 : 0),
   };
 }
 

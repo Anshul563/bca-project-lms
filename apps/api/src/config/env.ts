@@ -25,12 +25,11 @@ const envSchema = z.object({
   RATE_LIMIT_GLOBAL_MAX: z.coerce.number().int().min(10).default(300),
   RATE_LIMIT_AUTH_MAX: z.coerce.number().int().min(5).default(20),
 
-  STORAGE_PROVIDER: z.enum(["local", "cloudinary"]).default("local"),
+  // Local disk only in this build; object storage plugs in behind the same
+  // URL contract (see config/uploads.ts).
+  STORAGE_PROVIDER: z.literal("local").default("local"),
   LOCAL_STORAGE_PATH: z.string().default("./uploads"),
   LOCAL_STORAGE_PUBLIC_URL_PREFIX: z.string().default("/uploads"),
-  CLOUDINARY_CLOUD_NAME: z.string().optional(),
-  CLOUDINARY_API_KEY: z.string().optional(),
-  CLOUDINARY_API_SECRET: z.string().optional(),
 
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),

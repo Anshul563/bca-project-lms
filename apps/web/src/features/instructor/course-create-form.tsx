@@ -33,9 +33,12 @@ const formSchema = z.object({
   price: z
     .string()
     .trim()
-    .refine((value) => Number.isFinite(Number(value)) && Number(value) >= 0 && Number(value) <= 100_000, {
-      message: "Enter a price between 0 and 100,000",
-    }),
+    .refine(
+      (value) => Number.isFinite(Number(value)) && Number(value) >= 0 && Number(value) <= 100_000,
+      {
+        message: "Enter a price between 0 and 100,000",
+      },
+    ),
   tags: z.string().optional(),
   requirements: z.string().optional(),
   learningOutcomes: z.string().optional(),
@@ -132,7 +135,8 @@ export function CourseCreateForm() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">New course</h1>
         <p className="text-muted-foreground">
-          Start with the essentials. You can refine the details and build the curriculum after creating the draft.
+          Start with the essentials. You can refine the details and build the curriculum after
+          creating the draft.
         </p>
       </div>
 
@@ -145,14 +149,22 @@ export function CourseCreateForm() {
           <CardContent className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="title">Title</Label>
-              <Input id="title" placeholder="e.g. Modern Web Development Bootcamp" {...register("title")} />
-              {errors.title ? <p className="text-xs text-destructive">{errors.title.message}</p> : null}
+              <Input
+                id="title"
+                placeholder="e.g. Modern Web Development Bootcamp"
+                {...register("title")}
+              />
+              {errors.title ? (
+                <p className="text-xs text-destructive">{errors.title.message}</p>
+              ) : null}
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="subtitle">Subtitle</Label>
               <Input id="subtitle" placeholder="A one-line pitch" {...register("subtitle")} />
-              {errors.subtitle ? <p className="text-xs text-destructive">{errors.subtitle.message}</p> : null}
+              {errors.subtitle ? (
+                <p className="text-xs text-destructive">{errors.subtitle.message}</p>
+              ) : null}
             </div>
 
             <div className="grid gap-2">
@@ -164,7 +176,9 @@ export function CourseCreateForm() {
                 className="w-full rounded-md border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 {...register("description")}
               />
-              {errors.description ? <p className="text-xs text-destructive">{errors.description.message}</p> : null}
+              {errors.description ? (
+                <p className="text-xs text-destructive">{errors.description.message}</p>
+              ) : null}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -185,7 +199,11 @@ export function CourseCreateForm() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="level">Level</Label>
-                <select id="level" className="h-9 rounded-md border bg-background px-2 text-sm" {...register("level")}>
+                <select
+                  id="level"
+                  className="h-9 rounded-md border bg-background px-2 text-sm"
+                  {...register("level")}
+                >
                   {LEVELS.map((level) => (
                     <option key={level.value} value={level.value}>
                       {level.label}
@@ -196,12 +214,16 @@ export function CourseCreateForm() {
               <div className="grid gap-2">
                 <Label htmlFor="language">Language</Label>
                 <Input id="language" {...register("language")} />
-                {errors.language ? <p className="text-xs text-destructive">{errors.language.message}</p> : null}
+                {errors.language ? (
+                  <p className="text-xs text-destructive">{errors.language.message}</p>
+                ) : null}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="price">Price (USD)</Label>
                 <Input id="price" type="number" min={0} step="0.01" {...register("price")} />
-                {errors.price ? <p className="text-xs text-destructive">{errors.price.message}</p> : null}
+                {errors.price ? (
+                  <p className="text-xs text-destructive">{errors.price.message}</p>
+                ) : null}
                 <p className="text-xs text-muted-foreground">Use 0 for a free course.</p>
               </div>
             </div>
@@ -211,7 +233,9 @@ export function CourseCreateForm() {
         <Card>
           <CardHeader>
             <CardTitle>Details</CardTitle>
-            <CardDescription>Optional, but they make the course page much stronger.</CardDescription>
+            <CardDescription>
+              Optional, but they make the course page much stronger.
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid gap-2">
@@ -253,7 +277,9 @@ export function CourseCreateForm() {
             Cancel
           </Button>
           <Button type="submit" disabled={isSubmitting || createMutation.isPending}>
-            {isSubmitting || createMutation.isPending ? <Loader2 className="animate-spin" aria-hidden /> : null}
+            {isSubmitting || createMutation.isPending ? (
+              <Loader2 className="animate-spin" aria-hidden />
+            ) : null}
             Create draft
           </Button>
         </div>

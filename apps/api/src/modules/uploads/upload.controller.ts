@@ -6,7 +6,12 @@ import type { UploadedFile } from "@lms/shared";
 import type { Request, Response } from "express";
 import multer from "multer";
 
-import { MAX_UPLOAD_BYTES, UPLOAD_MIME_LIMITS, uploadsDir } from "../../config/uploads.js";
+import {
+  MAX_UPLOAD_BYTES,
+  UPLOAD_MIME_LIMITS,
+  uploadsDir,
+  uploadsPublicPrefix,
+} from "../../config/uploads.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { sendSuccess } from "../../utils/apiResponse.js";
@@ -68,7 +73,7 @@ export const uploadFile = asyncHandler(async (req: Request, res: Response) => {
 
   const origin = `${req.protocol}://${req.get("host")}`;
   const uploaded: UploadedFile = {
-    url: `${origin}/uploads/${req.file.filename}`,
+    url: `${origin}${uploadsPublicPrefix}/${req.file.filename}`,
     mimeType: req.file.mimetype,
     size: req.file.size,
   };

@@ -262,3 +262,12 @@ MP4/WebM/MOV **200 MB**. Anything else → 400 `UNSUPPORTED_FILE_TYPE`; oversize
 `POST /courses/id/:id/submit-for-review` → admin review. `GET /courses/id/:id`
 returns the full owner view including lesson `content`, media URLs, and any
 `reviewNote`.
+
+## Operations (Phase 9)
+
+- `GET /api/v1/health` — liveness + database readiness (`200 ok` / `503 degraded`).
+- The API returns `X-Request-Id` on every response and accepts a client-supplied
+  value via the same header.
+- `GET /uploads/:filename` serves locally stored media with a 7-day cache.
+- Deployment topology, environment variables, backups, and the reverse-proxy
+  layout are documented in [`DEPLOYMENT.md`](DEPLOYMENT.md).

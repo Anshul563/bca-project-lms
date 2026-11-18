@@ -1,0 +1,34 @@
+# Build context exclusions
+.git
+.gitignore
+.agents
+node_modules
+**/node_modules
+.next
+**/.next
+dist
+**/dist
+coverage
+**/coverage
+**/*.tsbuildinfo
+
+# Never bake local secrets or data into images
+.env
+**/.env
+!**/.env.example
+**/.env.local
+
+# Local runtime data
+uploads
+apps/api/uploads
+data
+logs
+**/*.log
+
+# Dev tooling / docs not needed at build time
+.vscode
+.idea
+.DS_Store
+docs
+README.md
+docker-compose*.yml

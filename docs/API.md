@@ -178,3 +178,33 @@ Student (Bearer, enrolled):
 | GET | `/courses/id/:courseId/quiz/attempts/my` | Own attempts, newest first (max 50) |
 
 
+
+## Reviews (Phase 6 — implemented)
+
+One review per learner per course (create-or-replace, `PUT`). Writing requires
+an active/completed enrollment. The course's `ratingAverage`/`ratingCount`
+denormalized fields are recomputed on every save/delete.
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET | `/courses/:slug/reviews` | Public | Paginated (`?page&limit`), newest first; items include learner `name`/`avatar`, never email |
+| GET | `/courses/id/:courseId/reviews/my` | Bearer | Caller's review or `null` |
+| PUT | `/courses/id/:courseId/reviews/my` | Bearer + enrolled | `{ rating: 1..5, comment?: 3..1000 }`; upserts. 403 `NOT_ENROLLED`, 422 invalid rating |
+| DELETE | `/courses/id/:courseId/reviews/my` | Bearer | Removes the caller's review (404 if absent) |
+
+## Certificates (Phase 6 — implemented)
+
+Certificates are issued **automatically and idempotently**:
+
+- Enrollment must be completed (all lessons at 100%).
+- If the course has a quiz, at least one **passed** attempt is required; the
+  score is recorded on the certificate (`quizScorePercent`).
+- Issuance is attempted after every lesson completion and every quiz
+  submission, so either path can be the final step.
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET | `/certificates/my` | Bearer | Own certificates, newest first (`serial`, `issuedAt`, `learner`, `course`, `lessonsCompleted`, `totalLessons`, `quizScorePercent?`) |
+| GET | `/certificates/:serial` | Public | Verification view; case-insensitive serial, 404 if unknown |
+
+Serial format: `LMS-<year>-<8 hex chars>` (e.g. `LMS-2026-A1B2C3D4`), unique.

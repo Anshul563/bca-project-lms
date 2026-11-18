@@ -86,13 +86,21 @@ function StudentDashboard() {
 
   return (
     <div className="grid gap-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">My learning</h1>
-        <p className="text-muted-foreground">
-          {active.length > 0
-            ? `You have ${active.length} active course${active.length === 1 ? "" : "s"}. Keep going!`
-            : "Enroll in a course to start learning."}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">My learning</h1>
+          <p className="text-muted-foreground">
+            {active.length > 0
+              ? `You have ${active.length} active course${active.length === 1 ? "" : "s"}. Keep going!`
+              : "Enroll in a course to start learning."}
+          </p>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/certificates">
+            <GraduationCap aria-hidden />
+            My certificates
+          </Link>
+        </Button>
       </div>
 
       {enrollmentsQuery.isPending ? (

@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { EnrollButton } from "@/features/courses/enroll-button";
+import { CourseReviews } from "@/features/courses/course-reviews";
 import { getCourseDetail } from "@/lib/course-api";
 
 const LEVEL_LABELS: Record<string, string> = {
@@ -135,6 +136,13 @@ async function CourseDetailContent({ slug }: { slug: string }) {
               </ul>
             </section>
           ) : null}
+
+          <CourseReviews
+            slug={course.slug}
+            courseId={course.id}
+            ratingAverage={course.ratingAverage}
+            ratingCount={course.ratingCount}
+          />
 
           {/* Curriculum */}
           <section aria-labelledby="curriculum-heading" className="grid gap-3">

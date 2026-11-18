@@ -97,3 +97,24 @@ decision changes.
 - Quiz routes mount on `/courses` alongside the course router
   (`/id/:courseId/quiz...` for students, `/id/:id/quizzes...` for
   instructors) — no path collisions with `/:slug` routes.
+
+## Reviews & certificates (Phase 6)
+
+- **One review per learner per course**, create-or-replace via `PUT …
+  /reviews/my`. Only actively-enrolled (active/completed) learners may
+  review; comments are optional. `ratingAverage`/`ratingCount` are
+  denormalized onto the course and recomputed from an aggregation on every
+  save/delete (small scale; if review volume grows this becomes an
+  incremental update or scheduled rollup).
+- **Certificate policy**: lessons at 100% AND, when the course has a quiz, a
+  passed attempt. This matches the core journey (learn → quiz → certificate)
+  without blocking quiz-less courses. Issuance is attempted from both
+  `completeLesson` and quiz submission and is idempotent (unique `user+course`
+  index), so ordering doesn't matter. Certificates are immutable snapshots
+  (lesson counts + quiz score at issue time).
+- **Verification is public** by serial (`/certificates/:serial`) — the page is
+  designed for sharing/printing; serials are random (4 bytes hex) rather than
+  sequential so they can't be enumerated.
+- Quiz/review/certificate routes apply `authenticate` **per-route**, never via
+  `router.use`, because multiple routers share the `/courses` mount and
+  router-level auth would gate unrelated public paths.
